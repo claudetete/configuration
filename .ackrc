@@ -1,0 +1,12 @@
+# filename color
+--color-filename=bright_magenta
+# match color
+--color-match=bright_red
+# line number color
+--color-lineno=bright_green
+
+# do not group all match under the filename but show it like grep
+--nogroup
+
+# add the type of autohotkey
+# --type-add=ahk=.ahk

@@ -1,0 +1,1345 @@
+<VERSION>StrokeIt .9.4</VERSION>
+
+<APP name="Default">
+Go to Desktop 1 [Up-Left] {
+   gesture = Up-Left
+   gesture = Left-Up
+   C-M-numpad7 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][NUMPAD7][ALT_UP][CTRL_UP]"
+}
+Go to Desktop 2 [Up-Right] {
+   gesture = Up-Right
+   gesture = Right-Up
+   C-M-numpad9 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][NUMPAD9][ALT_UP][CTRL_UP]"
+}
+Go to Desktop 3 [Down-Left] {
+   gesture = Left-Down
+   C-M-numpad1 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][NUMPAD1][ALT_UP][CTRL_UP]"
+}
+Go to Desktop 4 [Down-Right] {
+   gesture = Right-Down
+   C-M-numpad3 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][NUMPAD3][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="AcrobatReader">
+exec=AcroRd32.exe
+class=AcrobatSDIWindow
+Close [Down-Right] {
+   gesture = Down-Right
+   Alt+F4 = keys, hotkey "[ALT_DOWN][F4][ALT_UP]"
+}
+Maximize Windows [Up] {
+   gesture = Up
+   Maximize Windows = win, max_rest
+}
+Tool/Hand [Right] {
+   gesture = Right
+   C-M-F10 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F10][ALT_UP][CTRL_UP]"
+}
+Tool/Select [Left] {
+   gesture = Left
+   C-M-F9 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F9][ALT_UP][CTRL_UP]"
+}
+Tool/Zoom [Down] {
+   gesture = Down
+   C-M-F11 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F11][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="CANdb++ Editor">
+exec=CANdb.exe
+exec=vpanel32.exe
+exec=CANoe32.exe
+Close [Down-Right] {
+   gesture = Down-Right
+   Alt+F4 = keys, hotkey "[ALT_DOWN][F4][ALT_UP]"
+}
+</APP>
+
+<APP name="Disabled Apps">
+class=BaseBar
+exec=BF1942.exe
+exec=ce.exe
+class=Diablo II
+exec=F1_2002.exe
+exec=gta3.exe
+exec=hl.exe
+exec=jk2mp.exe
+exec=jk2sp.exe
+exec=mohaa.exe
+exec=nwmain.exe
+exec=quake3.exe
+exec=SeriousSam.exe
+exec=simcity 4.exe
+exec=starcraft.exe
+exec=unreal2.exe
+exec=UnrealTournament.exe
+exec=ut2003.exe
+exec=war3.exe
+exec=swgclient.exe
+exec=XWin.exe
+exclude=true
+</APP>
+
+<APP name="Excel">
+exec=EXCEL.EXE
+Close File [Down-Right] {
+   gesture = Down-Right
+   C-M-F12 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F12][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="Excel VBA">
+class=wndclass_desked_gsk
+class=wndclass_desked_gsk
+Close File [Down-Right] {
+   gesture = Down-Right
+   M-F4 = keys, hotkey "[ALT_DOWN][F4][ALT_UP]"
+}
+</APP>
+
+<APP name="Explorer">
+exec=Explorer.EXE
+caption=*AperÁu des images et des tÈlÈcopies Windows
+pattern=true
+exec=7zFM.exe
+exec=EA.exe
+Close [Down-Right] {
+   gesture = Down-Right
+   M-F4 = keys, hotkey "[ALT_DOWN][F4][ALT_UP]"
+}
+Maximize [Up] {
+   gesture = Up
+   Windows: Maximize = win, max_rest
+}
+Minimize [Down] {
+   gesture = Down
+   Windows: Minimize = win, min
+}
+</APP>
+
+<APP name="FlashFXP">
+exec=FlashFXP.exe
+exclude=true
+Min to Tray [/ Down] {
+   gesture = / Down
+   New Command = keys, hotkey [F9]
+}
+Site Manager [S] {
+   gesture = S
+   F4 = keys, hotkey [F4]
+}
+Up Directory [Left] {
+   gesture = Left
+   Back = keys, hotkey [BACK]
+}
+</APP>
+
+<APP name="FreeCommanderXE">
+class=TFcFormMain
+exec=FreeCommander.exe
+Close [Down-Right] {
+   gesture = Down-Right
+   C-w = keys, hotkey "[CTRL_DOWN]w[CTRL_UP]"
+}
+Tab Left [Left] {
+   gesture = Left
+   C-S-Tab = keys, hotkey "[CTRL_DOWN][SHIFT_DOWN][TAB][SHIFT_UP][CTRL_UP]"
+}
+Tab Right [Right] {
+   gesture = Right
+   C-Tab = keys, hotkey "[CTRL_DOWN][TAB][CTRL_UP]"
+}
+</APP>
+
+<APP name="Gimp">
+Close [Down-Right] {
+   gesture = Down-Right
+   C-w = keys, hotkey "[CTRL_DOWN]w[CTRL_UP]"
+}
+Maximize Windows [Up] {
+   gesture = Up
+   Maximize Windows = win, max_rest
+}
+</APP>
+
+<APP name="Internet Explorer">
+exec=iexplore.exe
+class=IEFrame
+Close [Down-Right] {
+   gesture = Down-Right
+   M-F4 = keys, hotkey "[ALT_DOWN][F4][ALT_UP]"
+}
+</APP>
+
+<APP name="MediaPlayerClassic">
+class=MediaPlayerClassicW
+pattern=true
+Close {
+   gesture = Down-Right
+   Alt+F4 = keys, hotkey "[ALT_DOWN][F4][ALT_UP]"
+}
+Opera [O] {
+   gesture = 0
+   gesture = O
+   gesture = O Reversed
+   W-A = keys, keys ""
+}
+</APP>
+
+<APP name="Mozilla">
+class=MozillaWindowClass
+class=MozillaUIWindowClass
+exec=framafox.exe
+Cancel Close Tab [Down Left] {
+   gesture = Down-Left
+   C-S-t = keys, hotkey "[CTRL_DOWN][SHIFT_DOWN]t[SHIFT_UP][CTRL_UP]"
+}
+Close Tab [Down Right] {
+   gesture = Down-Right
+   C-w = keys, hotkey "[CTRL_DOWN]W[CTRL_UP]"
+}
+New Tab [Down] {
+   gesture = Down
+   C-t = keys, hotkey "[CTRL_DOWN]t[CTRL_UP]"
+}
+Next Tab [Right] {
+   gesture = Right
+   C-Tab = keys, hotkey "[CTRL_DOWN][TAB][CTRL_UP]"
+}
+Previous Tab [Left] {
+   gesture = Left
+   C-S-Tab = keys, hotkey "[CTRL_DOWN][SHIFT_DOWN][TAB][SHIFT_UP][CTRL_UP]"
+}
+Traduction [Up] {
+   gesture = Up
+   C-M-a = keys, hotkey "[CTRL_DOWN]<[CTRL_UP]"
+}
+</APP>
+
+<APP name="Notepad">
+exec=NOTEPAD.EXE
+Close [Down-Right] {
+   gesture = Down-Right
+   M-F4 = keys, hotkey "[ALT_DOWN][F4][ALT_UP]"
+}
+</APP>
+
+<APP name="Opera">
+class=Opera Main Window
+class=OpWindow
+exec=opera.exe
+exclude=true
+</APP>
+
+<APP name="Outlook Express">
+exec=OUTLOOK.EXE
+Close [Down-Right] {
+   gesture = Down-Right
+   M-F4 = keys, hotkey "[ALT_DOWN][F4][ALT_UP]"
+}
+</APP>
+
+<APP name="Q-Dir">
+exec=Q-Dir.exe
+Close Tab [Down-Right] {
+   gesture = Down-Right
+   C-w = keys, hotkey "[CTRL_DOWN]w[CTRL_UP]"
+}
+New Tab [Up] {
+   gesture = Up
+   C-t = keys, hotkey "[CTRL_DOWN]t[CTRL_UP]"
+}
+Tab Switch Left [Left] {
+   gesture = Left
+   C-S-Tab = keys, hotkey "[CTRL_DOWN][SHIFT_DOWN][TAB][SHIFT_UP][CTRL_UP]"
+}
+Tab Switch Right [Right] {
+   gesture = Right
+   C-Tab = keys, hotkey "[CTRL_DOWN][TAB][CTRL_UP]"
+}
+</APP>
+
+<APP name="SciTE">
+exec=SciTE.exe
+Close [Down-Right] {
+   gesture = Down-Right
+   M-F4 = keys, hotkey "[ALT_DOWN][F4][ALT_UP]"
+}
+</APP>
+
+<APP name="Synergy">
+exec=ccm_gui.exe
+Close [Down-Right] {
+   gesture = Down-Right
+   M-F4 = keys, hotkey "[ALT_DOWN][F4][ALT_UP]"
+}
+</APP>
+
+<APP name="SynergyCheckOut">
+caption=Check Out Project
+Fill Project Version [Up] {
+   gesture = Up
+   C-M-F7 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F7][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="SynergyConnection">
+caption=ObjectMake
+Close [Down-Right] {
+   gesture = Down-Right
+   M-F4 = keys, hotkey "[ALT_DOWN][F4][ALT_UP]"
+}
+Connection to TUPI [Right] {
+   gesture = Right
+   C-M-F2 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F2][ALT_UP][CTRL_UP]"
+}
+Connection to VW_SPEC_TDB [Left] {
+   gesture = Left
+   C-M-F3 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F3][ALT_UP][CTRL_UP]"
+}
+First Connection TUPI [Up] {
+   gesture = Up
+   C-M-F1 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F1][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="SynergyDelete">
+caption=Delete
+Close [Down-Right] {
+   gesture = Down-Right
+   M-F4 = keys, hotkey "[ALT_DOWN][F4][ALT_UP]"
+}
+Delete [Down] {
+   gesture = Up
+   gesture = Down
+   gesture = Left
+   C-M-F7 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F7][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="SynergyDeleteConfirmation">
+caption=Delete Confirmation
+Close [Down-Right] {
+   gesture = Down-Right
+   M-F4 = keys, hotkey "[ALT_DOWN][F4][ALT_UP]"
+}
+Delete [Down] {
+   gesture = Up
+   gesture = Down
+   gesture = Left
+   C-M-F7 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F7][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="SynergyFindUse">
+caption=Find Use
+Find [Down] {
+   gesture = Down
+   C-M-F7 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F7][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="SynergyHistory">
+class=CcmHistory
+Delete [Down] {
+   gesture = Down
+   C-M-F6 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F6][ALT_UP][CTRL_UP]"
+}
+previous Source Compare [Left] {
+   gesture = Left
+   C-M-F8 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F8][ALT_UP][CTRL_UP]"
+}
+Source Compare [Up] {
+   gesture = Up
+   C-M-F7 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F7][ALT_UP][CTRL_UP]"
+}
+Source Compare already selected [Right] {
+   gesture = Right
+   C-M-F5 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F5][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="SynergyMake">
+caption=ObjectMake
+Close [Down-Right] {
+   gesture = Down-Right
+   M-F4 = keys, hotkey "[ALT_DOWN][F4][ALT_UP]"
+}
+make all [Up] {
+   gesture = Up
+   C-M-KP* = keys, hotkey "[CTRL_DOWN][ALT_DOWN][MULTIPLY][ALT_UP][CTRL_UP]"
+}
+make clean all [Down] {
+   gesture = Down
+   C-M-KP- = keys, hotkey "[CTRL_DOWN][ALT_DOWN][SUBTRACT][ALT_UP][CTRL_UP]"
+}
+make simu [Left] {
+   gesture = Left
+   C-M-KP/ = keys, hotkey "[CTRL_DOWN][ALT_DOWN][DIVIDE][ALT_UP][CTRL_UP]"
+}
+make without copy [Right] {
+   gesture = Right
+   C-M-\= = keys, hotkey "[CTRL_DOWN][ALT_DOWN]=[ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="SynergyProject">
+class=CcmProject
+(in/de)crease "name" width [Left-Right] {
+   gesture = Right-Left
+   gesture = Left-Right
+   gesture = Right-Left-Right
+   gesture = Left-Right-Left
+   C-M-F2 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F2][ALT_UP][CTRL_UP]"
+}
+Check Out [Down-Left] {
+   gesture = Down-Left
+   C-M-F6 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F6][ALT_UP][CTRL_UP]"
+}
+Delete [Left] {
+   gesture = Left
+   C-M-F7 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F7][ALT_UP][CTRL_UP]"
+}
+Reconcile [Down] {
+   gesture = Down
+   C-M-F9 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F9][ALT_UP][CTRL_UP]"
+}
+Reconfigure [Right] {
+   gesture = Right
+   C-M-F10 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F10][ALT_UP][CTRL_UP]"
+}
+Reconfigure Properties [Right-Down] {
+   gesture = Right-Up
+   C-M-F3 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F3][ALT_UP][CTRL_UP]"
+}
+Resize&Move Window [Up-Down] {
+   gesture = Up-Down
+   gesture = Down-Up
+   C-F11 = keys, hotkey "[CTRL_DOWN][F12][CTRL_UP]"
+}
+Show History [Up] {
+   gesture = Up
+   C-M-F12 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F12][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="SynergyReconcileAdvanced">
+caption=Advanced Work Area Conflict Resolution
+Update [Down] {
+   gesture = Down
+   C-M-F8 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F8][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="SynergyReconfigureProperties">
+caption=Reconfigure Properties*
+pattern=true
+Add Folder of PTF [Down] {
+   gesture = Up
+   gesture = Down
+   gesture = Left
+   C-M-F7 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F7][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="SynergySelectTasks">
+caption=Select Task
+Browse Tasks [Up] {
+   gesture = Up
+   C-M-F7 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F7][ALT_UP][CTRL_UP]"
+}
+Create Task [Down Left] {
+   C-M-F6 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F6][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="SynergyShowConflicts">
+caption=Show Conflicts Results
+Show Only Conflicts [Up] {
+   gesture = Up
+   C-M-F7 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F7][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="SynergyShowFolder">
+caption=Show Folder
+Add Task... [Up] {
+   gesture = Up
+   C-M-F6 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F6][ALT_UP][CTRL_UP]"
+}
+Remove [Left] {
+   gesture = Left
+   C-M-F5 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F5][ALT_UP][CTRL_UP]"
+}
+Show [Down] {
+   gesture = Down
+   C-M-F7 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F7][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="SynergyTaskbrowse">
+caption=Task Browsing View*
+pattern=true
+Find Use [Down] {
+   gesture = Down
+   C-M-F7 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F7][ALT_UP][CTRL_UP]"
+}
+Information [Down-Left] {
+   gesture = Down-Left
+   C-M-F5 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F5][ALT_UP][CTRL_UP]"
+}
+Show History [Up] {
+   gesture = Up
+   C-M-F6 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F6][ALT_UP][CTRL_UP]"
+}
+Version Compare [Left] {
+   gesture = Left
+   gesture = Right
+   C-M-F8 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F8][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="SynergyUnuse">
+caption=Unuse
+Close [Down-Right] {
+   gesture = Down-Right
+   M-F4 = keys, hotkey "[ALT_DOWN][F4][ALT_UP]"
+}
+Unuse Delete Replace [Up] {
+   gesture = Up
+   gesture = Down
+   gesture = Left
+   C-M-F7 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F7][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<APP name="WinMerge">
+exec=winmergeU.exe
+exec=WinMergeU.exe
+Close [Down-Right] {
+   gesture = Down-Right
+   M-F4 = keys, hotkey "[ALT_DOWN][F4][ALT_UP]"
+}
+Compare All Space [Right] {
+   gesture = Right
+   C-F12 = keys, hotkey "[CTRL_DOWN][F12][CTRL_UP]"
+}
+Compare No Space [Left] {
+   gesture = Left
+   C-F11 = keys, hotkey "[CTRL_DOWN][F11][CTRL_UP]"
+}
+Next Diff [Down] {
+   gesture = Down
+   M-Down = keys, hotkey "[ALT_DOWN][DOWN][ALT_UP]"
+}
+Previous Diff [Up] {
+   gesture = Up
+   M-Up = keys, hotkey "[ALT_DOWN][UP][ALT_UP]"
+}
+</APP>
+
+<APP name="Word">
+exec=WINWORD.EXE
+Close File [Down-Right] {
+   gesture = Down-Right
+   M-F4 = keys, hotkey "[ALT_DOWN][F4][ALT_UP]"
+}
+Paste Special [Up] {
+   gesture = Up
+   C-M-F11 = keys, hotkey "[CTRL_DOWN][ALT_DOWN][F11][ALT_UP][CTRL_UP]"
+}
+</APP>
+
+<GESTURE>
+Right {
+E`
+}
+
+Right-Up {
+xc
+}
+
+Right-Down {
+i
+}
+
+Right-Left {
+Ee@
+}
+
+Right-Left-Right {
+EeE`
+}
+
+Left {
+e@
+}
+
+Left-Up {
+òA
+}
+
+Left-Down {
+2G
+}
+
+Left-Right {
+eE`
+}
+
+Left-Right-Left {
+eEe@
+}
+
+Up {
+Ö 
+}
+
+Up-Right {
+t#
+}
+
+Up-Left {
+ñ!
+}
+
+Up-Down {
+Ö%Ä
+}
+
+Up-Down-Up {
+Ö%Ö 
+}
+
+Down {
+%Ä
+}
+
+Down-Left {
+6á
+}
+
+Down-Right {
+â
+}
+
+Down-Up {
+%Ö 
+}
+
+Down-Up-Down {
+%Ö%Ä
+}
+
+/ Up {
+u0
+}
+
+/ Up - / Down {
+u5p
+}
+
+/ Down {
+5p
+}
+
+/ Down - / Up {
+5u0
+}
+
+\ Down {
+ê
+}
+
+\ Down - \ Up {
+ï
+}
+
+\ Up {
+ï
+}
+
+\ Up - \ Down {
+ïê
+}
+
+1 {
+alias=Down
+}
+
+2 {
+alias=Z
+}
+
+3 {
+special=||E
+eò
+}
+
+3 Reversed {
+special=-||E
+}
+
+4 {
+eBi
+ei
+}
+
+5 {
+alias=S
+}
+
+6 {
+alias=G
+}
+
+7 {
+alias=Y
+}
+
+8 {
+2HòB0
+$âÑ 
+2HB0
+$âáS
+2EòB0
+$YÑ 
+2EòE0
+$YÑ#
+2HòB
+$âÑ#
+!YÑ#
+2òB0
+!YÑS
+&ÑS
+!YÑ 
+5òB0
+2HE0
+2HòE0
+2HòE0
+2u0
+$YÑS 
+2EòE2
+$ÑS 
+2HòE2
+2EòE2
+2òE2
+!YÑ#!
+$YáS!
+$YÑ#!
+$YÑS!
+!YÑS 
+!YÑS!
+$âáS!
+!YáS!
+!WS!
+òu2
+òE2
+$ÑS!
+$áS!
+$âÑS!
+òE2
+òB
+òB
+$âáS 
+òB2
+2Eòu2
+!YÑ# 
+!YáQ
+$YáS 
+u2
+!&áS 
+!YáS 
+2òE0
+$YÑ!
+!YáR
+Ü!
+2òu2
+%òE2
+%òE2
+&áS 
+5òE2
+$âÑS 
+u2
+áS!
+âáS!
+5òu2
+&áÜ 
+2òE2
+2hB2
+5òB2
+%u2
+%òB2
+&ÑS 
+6Ñ# 
+$u2
+ÑS 
+5òE0
+!WS 
+!&Ñ 
+}
+
+9 {
+$Si
+2Bi
+!&ê
+2GSi
+2E6ê
+$&ê
+2i
+26ê
+$Ü6ê
+$u6ê
+}
+
+0 {
+alias=O
+}
+
+A {
+t&ê
+u6ê
+t%ê
+t&
+}
+
+B {
+B2á
+B2òp
+B2Eòp
+B5Hp
+B5òp
+BRhp
+Beòp
+Bhp
+Q#YÄ
+q#$á
+t!&T
+t!&á
+t!YÄ
+t!Yá
+t#!&T
+t#!Vá
+t#!W
+t#!YÄ
+t#!Yá
+t#$Vá
+t#$YÄ
+t#$Yá
+t#$á
+t#&W
+t#&á
+t#TVá
+t#TYÄ
+t#TYá
+t#Tá
+t#VÄ
+t#Vá
+t#W
+t#YÄ
+t#Yá
+t$Vá
+t$YÄ
+t$Yá
+t$Ä
+t$âá
+t%ò
+t%òp
+t&)á
+t&TYÄ
+t&TYá
+t&Tá
+t&YÄ
+t&Yá
+u5òp
+Ñ#!VÄ
+Ñ#!Vá
+Ñ#!YÄ
+Ñ#!Yá
+Ñ#$Y
+Ñ#$YÄ
+Ñ#$Yá
+Ñ#$Ä
+Ñ#&á
+Ñ#TYÄ
+Ñ#YÄ
+Ñ#Yá
+Ñ$YÄ
+Ñ$Yá
+Ñ&TYÄ
+Ñ&TYá
+Ñ&YÄ
+t&%òp
+t&&á
+t#Q&á
+t#Tâá
+t&Tâá
+Ñ&Tâá
+t&Wá
+t&$âá
+t#$âÄ
+}
+
+C {
+2Hê
+$â
+2H
+5xê
+}
+
+D {
+t&á
+t&Ä
+t&W
+Ñ&á
+}
+
+E {
+2Eexê
+25xê
+2exê
+25xê
+2exê
+2Exê
+!Wâ
+$Wâ
+2xê
+!$â
+5exê
+25x
+2x
+2Hê
+2Eex
+2exê
+5ex
+2Ehxê
+$VWâ
+22Hê
+22Hê
+2E5xê
+5uxê
+bExê
+bex
+bxê
+2GWÜ
+bHH
+bEx
+bEexê
+2HWÜ
+bHïx
+bHê
+5Exê
+2hx
+bHê
+bx
+5Eex
+2Hxê
+25x
+bexê
+2GWâ
+$âá
+bbHê
+55xê
+}
+
+F {
+alias=Left-Down
+}
+
+G {
+2He
+$ÜP
+2Hò
+$âÄ
+2Hï
+2Hòp
+2He@
+$ÜT
+$ÜW
+2Hep
+2Hï@
+2Hïp
+}
+
+H {
+uê
+Üê
+$uê
+t&ê
+u6ê
+tê
+}
+
+I {
+alias=Down
+}
+
+J {
+GS
+Hc
+}
+
+K {
+6Ñê
+5tê
+5t%ê
+5Ñ%ê
+5uê
+5tÄ
+5ê
+5Eê
+5Hê
+5i
+5t%Ä
+6ÑY
+6Ñâ
+5tâ
+6Ñ%ê
+5t&ê
+5uÄ
+$tê
+6tê
+2AY
+%tê
+5tâ
+}
+
+L {
+alias=Down-Right
+}
+
+M {
+special=-1E
+}
+
+N {
+tÜ0
+tñ0
+t%ñ0
+tÜ0
+tê
+AHc
+tÖ0
+tÜ0
+BYc
+tñ
+uñ0
+}
+
+O {
+$Ü0
+$Ü 
+2Hb
+$Ü!
+}
+
+P {
+t#T
+t&T
+Ñ&T
+t#!
+Ñ&!
+t#Q
+Ñ#P
+t&!
+t&P
+Ñ#Q
+t&Q
+Ñ&P
+t# 
+t#P
+t#$
+}
+
+Q {
+xñ2Ä
+Ü!P
+Ü!X
+Ü!Ä
+Ü$â
+Ü%ê
+$S$Ä
+$Ü!P
+$Ü!X
+$Ü!Y
+$Ü!Ä
+$Ü!â
+$Ü!ê
+$Ü$
+$Ü$p
+$Ü$Ä
+$Ü$â
+$Ü$ê
+$Ü%
+$Ü%Ä
+$Ü%ê
+$Ü&
+$Ü)
+2Hb
+2Hb
+2HbÄ
+2Hbê
+2Hb
+2Hb
+2HbH
+2HbHê
+2HbP
+2HbX
+2HbY
+2Hb`
+2Hbâ
+2Hbê
+Ü%
+2Hb@
+Ü$Ä
+Ü!Y
+$Ü&ê
+2E2i
+$v!Y
+$Ü$Y
+2GS!Y
+bHbHê
+bHbY
+2Hbi
+}
+
+R {
+t#Tâ
+t#TY
+t$â
+t&Tâ
+t&Y
+t#TÄ
+BeH
+t#Y
+Ñ&Tâ
+t$Y
+t&WÄ
+t#!Y
+t#$â
+Ñ&TY
+t&(
+Ñ&TÄ
+t#$Y
+Ñ#Y
+t#$Ä
+t&TÄ
+Ñ&Ä
+Ñ&Y
+t&â
+Ñ#Tâ
+Ñ$â
+BeEê
+Ñ#TY
+t&$Ä
+B5ê
+Ñ&â
+t#$P
+t&QH
+t&Wâ
+Ñ#Wâ
+Bexê
+Ñ&Wâ
+t#Wâ
+t&$â
+t&QY
+t&ïHê
+txê
+t&TY
+Ñ#$â
+}
+
+S {
+special=|3N
+!Yá
+2Hp
+2Ehp
+}
+
+T {
+alias=Right-Down
+}
+
+U {
+Ü0
+Ü
+Ö0
+ñ0
+u0
+}
+
+V {
+alias=U
+}
+
+W {
+special=1E
+}
+
+X {
+special=-1K
+}
+
+Y {
+6Ä
+&ê
+hp
+&Ä
+5p
+6ê
+5p
+6ê
+6á
+5Ä
+#W
+%6á
+}
+
+Z {
+special=3N
+}
+
+? {
+5Ä
+B5p
+Bh
+Bep
+B5Ä
+Q&Ä
+Q&W
+Q#W
+Q&á
+Q&ê
+Bi
+Q#X
+h
+ex
+ep
+!&W
+2h
+!&Ä
+}
+
+A Reversed {
+special=||A
+}
+
+C Reversed {
+special=-C
+}
+
+D Reversed {
+special=!D
+}
+
+E Reversed {
+special=-E
+}
+
+F Reversed {
+alias=Up-Right
+}
+
+G Reversed {
+special=!G
+}
+
+H Reversed {
+special=!H
+}
+
+I Reversed {
+alias=Up
+}
+
+J Reversed {
+special=!J
+}
+
+K Reversed {
+special=-K
+}
+
+L Reversed {
+alias=Left-Up
+}
+
+M Reversed {
+special=3E
+ñ%
+}
+
+N Reversed {
+special=-||N
+}
+
+O Reversed {
+special=||O
+}
+
+P Reversed {
+special=!P
+}
+
+S Reversed {
+special=|1N
+Ü!
+}
+
+T Reversed {
+alias=Up-Left
+}
+
+U Reversed {
+special=||U
+}
+
+V Reversed {
+alias=U Reversed
+}
+
+W Reversed {
+special=-3E
+}
+
+X Reversed {
+special=3K
+}
+
+Y Reversed {
+special=!Y
+}
+
+Z Reversed {
+special=1N
+}
+
+WHEEL_UP {
+}
+
+WHEEL_DOWN {
+}
+
+LBUTTON_DOWN {
+}
+
+LBUTTON_UP {
+}
+
+MBUTTON_DOWN {
+}
+
+MBUTTON_UP {
+}
+
+RBUTTON_DOWN {
+}
+
+RBUTTON_UP {
+}
+
+UP_LEFT {
+}
+
+</GESTURE>

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FolderMenu>
+	<Menu>
+		<Item ID="1" Type="Menu" Name="PM4S" Icon="C:\WINDOWS\system32\SHELL32.dll,38" Size="16">
+			<Item Type="Item" Name="PM4S_doc" Path="Z:\a2kc\doc\qualite\pm4s" Icon="C:\WINDOWS\system32\SHELL32.dll,126" Size=""></Item>
+			<Item Type="ItemMenu" Name="PM4S_src" Path="Z:\a2kc\soft\ccn4\ccn4_pm4s" Icon="C:\WINDOWS\system32\SHELL32.dll,38" Size="16" Depth="" File="" Ext="*" Drive=""></Item>
+			<Item Type="ItemMenu" Name="PM4S_tst" Path="Z:\a2kc\test\CCN4\test_s\pm4s" Icon="C:\WINDOWS\system32\SHELL32.dll,205" Size="16" Depth="" File="" Ext="*" Drive=""></Item>
+			<Item Type="Item" Name="PM4S_liv" Path="Z:\a2kc\liv\bin\ccn4" Icon="C:\WINDOWS\system32\SHELL32.dll,158" Size="16"></Item>
+			<Item Type="ItemMenu" Name="PM4S_tmp" Path="D:\Users\ctete\PM4S" Icon="" Size="16" Depth="2" File="" Ext="*" Drive=""></Item>
+			<Item Type="Separator" Name="- - - - -"></Item>
+			<Item Type="ItemMenu" Name="PARPM4S_src" Path="Z:\a2kc\soft\ccn4\parPM4S" Icon="C:\WINDOWS\system32\SHELL32.dll,38" Size="16" Depth="" File="" Ext="*" Drive=""></Item>
+			<Item Type="Item" Name="PARPM4S_liv" Path="Z:\a2kc\liv\config\CCN4\parPM4S\" Icon="C:\WINDOWS\system32\SHELL32.dll,158" Size="16"></Item>
+		</Item>
+		<Item ID="14" Type="Menu" Name="PUMA" Icon="C:\WINDOWS\system32\SHELL32.dll,38" Size="16">
+			<Item Type="Item" Name="PUMA_doc" Path="Z:\a2kc\doc\qualite\puma" Icon="C:\WINDOWS\system32\SHELL32.dll,126" Size=""></Item>
+			<Item ID="16" Type="Menu" Name="PUMA_src" Icon="C:\WINDOWS\system32\SHELL32.dll,38" Size="16">
+				<Item Type="ItemMenu" Name="PUMA_src_AC3_(a2kc)" Path="Z:\a2kc\soft\ccn4\ccn4_puma" Icon="" Size="" Depth="" File="" Ext="*" Drive=""></Item>
+				<Item Type="ItemMenu" Name="PUMA_src_AC3X_(o2kc)" Path="Z:\o2kc\soft\sharc\ccu_puma" Icon="" Size="" Depth="" File="" Ext="*" Drive=""></Item>
+			</Item>
+			<Item ID="21" Type="Menu" Name="PUMA_tst" Icon="shell32.dll,205" Size="16">
+				<Item Type="ItemMenu" Name="PUMA_tst_AC3_(a2kc)" Path="Z:\a2kc\test\CCN4\test_s\puma" Icon="" Size="" Depth="" File="" Ext="*" Drive=""></Item>
+				<Item Type="ItemMenu" Name="PUMA_tst_AC3X_(o2kc)" Path="Z:\o2kc\test\DSP_ond\test_4_puma" Icon="" Size="" Depth="" File="" Ext="*" Drive=""></Item>
+			</Item>
+			<Item ID="26" Type="Menu" Name="PUMA_liv" Icon="shell32.dll,158" Size="16">
+				<Item Type="Item" Name="PUMA_liv_AC3_(a2kc)" Path="Z:\a2kc\liv\bin\ccn4\puma_indus" Icon="" Size=""></Item>
+				<Item Type="Item" Name="PUMA_liv_AC3X_(o2kc)" Path="Z:\o2kc\liv\bin\vsharc" Icon="" Size=""></Item>
+				<Item Type="ItemMenu" Name="PUMA_liv_src_AC3X_(o2kc)" Path="Z:\o2kc\liv\source\vsharc\puma" Icon="" Size="" Depth="" File="" Ext="*" Drive=""></Item>
+			</Item>
+			<Item Type="ItemMenu" Name="PUMA_tmp" Path="D:\Users\ctete\PUMA" Icon="" Size="" Depth="2" File="" Ext="*" Drive=""></Item>
+			<Item Type="Separator" Name="- - - - -"></Item>
+			<Item ID="34" Type="Menu" Name="PARPUMA_src" Icon="C:\WINDOWS\system32\SHELL32.dll,38" Size="16">
+				<Item Type="ItemMenu" Name="ParPUMA_src_AC3_(a2kc)" Path="Z:\a2kc\test\CCN4\test_s\puma\config\ParPUMA" Icon="" Size="" Depth="" File="" Ext="*" Drive=""></Item>
+				<Item Type="ItemMenu" Name="ParPUMA_src_AC3X_(o2kc)" Path="Z:\o2kc\test\DSP_ond\test_4_puma\config\ParPUMA" Icon="" Size="" Depth="" File="" Ext="*" Drive=""></Item>
+			</Item>
+			<Item ID="39" Type="Menu" Name="PARPUMA_liv" Icon="shell32.dll,158" Size="16">
+				<Item Type="Item" Name="ParPUMA_liv_AC3_(a2kc)" Path="Z:\a2kc\liv\config\CCN4\parPM4S" Icon="" Size=""></Item>
+				<Item Type="Item" Name="ParPUMA_liv_AC3X_(o2kc)" Path="Z:\o2kc\liv\config\sharc\puma\ParPuma" Icon="" Size=""></Item>
+			</Item>
+		</Item>
+		<Item Type="Separator" Name="- - - - -"></Item>
+		<Item Type="ItemMenu" Name="CCView (M:)" Path="M:\" Icon="" Size="" Depth="2" File="" Ext="*" Drive=""></Item>
+		<Item Type="ItemMenu" Name="/tools" Path="D:\Users\ctete\tools" Icon="" Size="" Depth="" File="" Ext="*" Drive=""></Item>
+		<Item Type="ItemMenu" Name="/dotemacs" Path="D:\Users\ctete\tools\.emacs.d" Icon="" Size="" Depth="" File="" Ext="*" Drive=""></Item>
+		<Item Type="Item" Name="/tmp" Path="D:\Users\ctete\tmp" Icon="" Size=""></Item>
+		<Item Type="Item" Name="HOME Win" Path="D:\Documents and Settings\100516805\Application Data" Icon="" Size=""></Item>
+		<Item Type="Item" Name="HOME Cygwin" Path="D:\Documents and Settings\100516805\Application Data" Icon="" Size=""></Item>
+		<Item Type="Separator" Name="- - - - -"></Item>
+		<Item ID="53" Type="Menu" Name="Apps" Icon="" Size="16">
+			<Item Type="Item" Name="ClearCase" Path="C:\Program Files\IBM\RationalSDLC\ClearCase\bin\clearexplorer.exe" Icon="" Size="32"></Item>
+			<Item Type="Item" Name="ClearQuest" Path="C:\Program Files\IBM\RationalSDLC\ClearQuest\clearquest.exe" Icon="" Size="32"></Item>
+			<Item Type="Item" Name="Command Prompt Here" Path="cmd.exe /k cd /D %F_CurrentDir%" Icon="cmd.exe" Size="32"></Item>
+			<Item Type="Item" Name="Firefox" Path="C:\Program Files\Mozilla Firefox\firefox.exe" Icon="" Size="32"></Item>
+			<Item Type="Item" Name="GenRap.exe" Path="Z:\agl\liv\outils\test\QA-C\Reports\GenRap.exe" Icon="" Size="32"></Item>
+			<Item Type="Item" Name="GNU/Emacs" Path="D:\Users\ctete\tools\emacs-23.4\bin\runemacs.exe" Icon="" Size="32"></Item>
+			<Item Type="Item" Name="QA-C" Path="C:\Program Files\PRQA\QAC-7.1\bin\QACANL.exe" Icon="" Size="32"></Item>
+			<Item Type="Item" Name="RapidEnvironmentEditor" Path="D:\Users\ctete\tools\Liberkey\Apps\RapidEnvironmentEditor\RapidEnvironmentEditorLKL.exe" Icon="" Size="32"></Item>
+			<Item Type="Item" Name="RTRT" Path="C:\Program Files\Rational\TestRealTime\bin\intel\win32\studio.exe" Icon="" Size="32"></Item>
+		</Item>
+		<Item Type="Separator" Name="- - - - -"></Item>
+		<Item ID="64" Type="Menu" Name="FolderMenu" Icon="D:\Users\ctete\tools\FolderMenu\FolderMenu.exe,0" Size="16">
+			<Item ID="65" Type="Menu" Name="Files" Icon="shell32.dll,1" Size="16">
+				<Item Type="Item" Name="rxvt.exe" Path="D:\cygwin\bin\rxvt.exe -display :0 -sl 10000 -fg white -bg black -fn Terminal-8 -fb Terminal-8 -tn rxvt  -e /bin/zsh --login -i" Icon="" Size=""></Item>
+				<Item Type="Item" Name="AIMP2" Path="D:\Users\ctete\tools\Liberkey\Apps\AIMP\AIMPLKL.exe" Icon="" Size=""></Item>
+				<Item Type="Item" Name="Opera" Path="D:\Users\ctete\tools\OperaPortable\OperaPortable.exe" Icon="" Size=""></Item>
+				<Item Type="Item" Name="PicPick" Path="D:\Users\ctete\tools\Liberkey\Apps\PicPick\PicPickLKL.exe" Icon="" Size=""></Item>
+				<Item Type="Item" Name="Q-Dir" Path="D:\Users\ctete\tools\Liberkey\Apps\Q-Dir\Q-DirLKL.exe" Icon="" Size=""></Item>
+				<Item Type="Item" Name="QtCreator" Path="C:\QtSDK\QtCreator\bin\qtcreator.exe" Icon="" Size="16"></Item>
+				<Item Type="Item" Name="Emacs default" Path="D:\Users\ctete\tmp\emacs-23.4\bin\runemacs.exe" Icon="" Size="16"></Item>
+				<Item Type="Item" Name="PDFSAM" Path="D:\Users\ctete\tools\Framakey\Apps\PDFSAMPortable\PDFSAMPortable.exe" Icon="" Size="16"></Item>
+				<Item Type="Item" Name="VirtualBox" Path="C:\Program Files\Oracle\VirtualBox\VirtualBox.exe" Icon="" Size=""></Item>
+				<Item Type="Item" Name="Sandbox" Path="C:\Program Files\Oracle\VirtualBox\VirtualBox.exe --comment &quot;sandbox&quot; --startvm &quot;983e8684-fbaa-4398-b7d1-ffd9fea376b0&quot;" Icon="C:\Program Files\Oracle\VirtualBox\VirtualBox.exe,0" Size=""></Item>
+				<Item Type="Item" Name="Win7-x64" Path="&quot;C:\Program Files\Oracle\VirtualBox\VirtualBox.exe&quot; --comment &quot;Win7-x64&quot; --startvm &quot;f26706d5-f115-4b63-978f-fc8afc680735&quot;" Icon="C:\Program Files\Oracle\VirtualBox\VirtualBox.exe,0" Size=""></Item>
+				<Item Type="Item" Name="Xubuntu" Path="C:\Program Files\Oracle\VirtualBox\VirtualBox.exe --comment &quot;test&quot; --startvm &quot;04a54f08-f436-48f1-a1ab-4b8289f1cd41&quot;" Icon="C:\Program Files\Oracle\VirtualBox\VirtualBox.exe,0" Size=""></Item>
+			</Item>
+			<Item ID="78" Type="Menu" Name="WebSites" Icon="%ProgramFiles%\Internet Explorer\iexplore.exe,1" Size=""></Item>
+			<Item ID="79" Type="Menu" Name="Registry" Icon="regedit.exe" Size="">
+				<Item Type="Item" Name="HKCU Run" Path="HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run" Icon="" Size=""></Item>
+				<Item Type="Item" Name="HKLM Run" Path="HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" Icon="" Size=""></Item>
+			</Item>
+			<Item ID="82" Type="Menu" Name="Filters" Icon=".\FolderMenu.exe,-207" Size="">
+				<Item Type="Item" Name="Toggle Hidden Files" Path="_ToggleHidden" Icon="" Size=""></Item>
+				<Item Type="Separator" Name="- - - - -"></Item>
+				<Item Type="Item" Name="All Files" Path="*.*" Icon="" Size=""></Item>
+				<Item Type="Item" Name="Documents" Path="*.xls;*.ppt;*.pdf;*.doc" Icon="" Size=""></Item>
+				<Item Type="Item" Name="Images" Path="*.png;*.gif;*.jpg;*.jpeg;*.ico;*.bmp" Icon="" Size=""></Item>
+				<Item Type="Item" Name="Programs" Path="*.exe;*.com;*.cmd;*.bat" Icon="" Size=""></Item>
+				<Item Type="Item" Name="Text Files" Path="*.csv;*.txt" Icon="" Size=""></Item>
+				<Item Type="Item" Name="Compressed" Path="*.rar;*.7z;*.cab;*.gz;*.zip" Icon="" Size=""></Item>
+				<Item Type="Item" Name="Development" Path="*.php;*.htm;*.js" Icon="" Size=""></Item>
+			</Item>
+			<Item Type="Separator" Name="- - - - -"></Item>
+			<Item Type="Item" Name="&amp;Folder Menu" Path=":ToolMenu" Icon="" Size=""></Item>
+		</Item>
+	</Menu>
+	<Settings>
+		<Applications>
+			<Setting Name="ApplicationList">
+				<Application Check="1" Type="M" Name="Explorer" Class="CabinetWClass,ExploreWClass" ClassNN="Edit1"></Application>
+				<Application Check="1" Type="M" Name="Open/Save Dialog" Class="#32770" ClassNN="Edit1"></Application>
+				<Application Check="1" Type="C" Name="Office Dialog" Class="bosa_sdm_" ClassNN="RichEdit20W2"></Application>
+				<Application Check="1" Type="M" Name="Command" Class="ConsoleWindowClass" ClassNN="Edit1"></Application>
+				<Application Check="1" Type="M" Name="Desktop" Class="Progman,WorkerW" ClassNN="Edit1"></Application>
+				<Application Check="1" Type="M" Name="Taskbar" Class="Shell_TrayWnd" ClassNN="Edit1"></Application>
+				<Application Check="0" Type="M" Name="TotalCommander" Class="TTOTAL_CMD" ClassNN="Edit1"></Application>
+				<Application Check="0" Type="M" Name="UnrealCommander" Class="TxUNCOM" ClassNN="Edit1"></Application>
+				<Application Check="0" Type="M" Name="FreeCommander" Class="TfcForm" ClassNN="Edit1"></Application>
+				<Application Check="0" Type="M" Name="Emacs" Class="Emacs" ClassNN="Edit1"></Application>
+				<Application Check="1" Type="C" Name="rxvt" Class="rxvt" ClassNN="Edit1"></Application>
+				<Application Check="1" Type="M" Name="CubicExplorer" Class="TMainForm.UnicodeClass" ClassNN="Edit1"></Application>
+			</Setting>
+		</Applications>
+		<Hotkeys>
+			<Setting Name="HotkeyList">
+				<Hotkey Key="516" Func="_ShowMainMenu1"></Hotkey>
+				<Hotkey Key="2427" Func="_AddApp"></Hotkey>
+			</Setting>
+		</Hotkeys>
+		<Icons>
+			<Setting Name="NoMenuIcon" Value="0"></Setting>
+			<Setting Name="GetFavIcon" Value="0"></Setting>
+			<Setting Name="ShellIcon" Value="1"></Setting>
+			<Setting Name="IconSizeG" Value="16"></Setting>
+			<Setting Name="IconList">
+				<Icon Ext="Unknown" Size="" Path="shell32.dll" Index="0"></Icon>
+				<Icon Ext="Menu" Size="" Path=".\FolderMenu.exe" Index="0"></Icon>
+				<Icon Ext="Folder" Size="" Path=".\FolderMenu.exe" Index="-208"></Icon>
+				<Icon Ext="FolderS" Size="" Path=".\FolderMenu.exe" Index="0"></Icon>
+				<Icon Ext="Drive" Size="" Path=".\FolderMenu.exe" Index="-209"></Icon>
+				<Icon Ext="Computer" Size="" Path=".\FolderMenu.exe" Index="-210"></Icon>
+				<Icon Ext="Share" Size="" Path=".\FolderMenu.exe" Index="-211"></Icon>
+			</Setting>
+		</Icons>
+		<Menus>
+			<Setting Name="MenuPositionX" Value="0"></Setting>
+			<Setting Name="MenuPositionY" Value="0"></Setting>
+			<Setting Name="MenuPosition" Value="0"></Setting>
+			<Setting Name="TempShowFile" Value="0"></Setting>
+			<Setting Name="TempShowFExt" Value="*"></Setting>
+			<Setting Name="AltFolderIcon" Value="0"></Setting>
+			<Setting Name="BrowseMode" Value="0"></Setting>
+			<Setting Name="TempDriveType" Value="Fixed"></Setting>
+			<Setting Name="HideExt" Value="0"></Setting>
+			<Setting Name="HideLnk" Value="0"></Setting>
+			<Setting Name="ItemWarn" Value="1"></Setting>
+			<Setting Name="DriveType" Value="Fixed"></Setting>
+			<Setting Name="DriveReload" Value="1"></Setting>
+			<Setting Name="DriveFree" Value="1"></Setting>
+			<Setting Name="TCPathExe" Value="C:\totalcmd\totalcmd.exe"></Setting>
+			<Setting Name="TCPathIni" Value="C:\totalcmd\wincmd.ini"></Setting>
+			<Setting Name="TCAsMain" Value="0"></Setting>
+			<Setting Name="TCSubmenu" Value="1"></Setting>
+			<Setting Name="SRecentSize" Value="16"></Setting>
+			<Setting Name="SRecentDate" Value="0"></Setting>
+			<Setting Name="SRecentIndex" Value="0"></Setting>
+			<Setting Name="SRecentFolder" Value="0"></Setting>
+			<Setting Name="SRecentFull" Value="1"></Setting>
+			<Setting Name="RecentSize" Value="16"></Setting>
+			<Setting Name="RecentDate" Value="0"></Setting>
+			<Setting Name="RecentIndex" Value="0"></Setting>
+			<Setting Name="RecentFolder" Value="0"></Setting>
+			<Setting Name="RecentFull" Value="1"></Setting>
+			<Setting Name="RecentList">
+				<Recent Date="" Path=""></Recent>
+				<Recent Date="" Path=""></Recent>
+				<Recent Date="" Path=""></Recent>
+				<Recent Date="" Path=""></Recent>
+				<Recent Date="" Path=""></Recent>
+				<Recent Date="" Path=""></Recent>
+				<Recent Date="" Path=""></Recent>
+				<Recent Date="" Path=""></Recent>
+				<Recent Date="" Path=""></Recent>
+				<Recent Date="" Path=""></Recent>
+				<Recent Date="" Path=""></Recent>
+				<Recent Date="" Path=""></Recent>
+				<Recent Date="" Path=""></Recent>
+				<Recent Date="" Path=""></Recent>
+				<Recent Date="" Path=""></Recent>
+				<Recent Date="" Path=""></Recent>
+			</Setting>
+		</Menus>
+		<Others>
+			<Setting Name="Language" Value=""></Setting>
+			<Setting Name="StartWithWin" Value="0"></Setting>
+			<Setting Name="NoTray" Value="0"></Setting>
+			<Setting Name="AddFavAtTop" Value="0"></Setting>
+			<Setting Name="AddFavCheck" Value="0"></Setting>
+			<Setting Name="AddFavSkipGui" Value="0"></Setting>
+			<Setting Name="AddFavApp" Value="1"></Setting>
+			<Setting Name="AddFavAppCmd" Value="0"></Setting>
+			<Setting Name="AddFavLnk" Value="1"></Setting>
+			<Setting Name="FileManager" Value=""></Setting>
+			<Setting Name="Browser" Value=""></Setting>
+			<Setting Name="SearchSel" Value="0"></Setting>
+			<Setting Name="SearchSelUrl" Value="http://www.google.com/search?q=%s"></Setting>
+			<Setting Name="LoadingTip" Value="1"></Setting>
+			<Setting Name="LoadingTipFor" Value="11"></Setting>
+			<Setting Name="CheckVersion" Value="1"></Setting>
+			<Setting Name="CurrentVer" Value="3.1.2.2"></Setting>
+		</Others>
+		<GUI>
+			<Setting Name="OptionsPosX" Value="1208"></Setting>
+			<Setting Name="OptionsPosY" Value="272"></Setting>
+			<Setting Name="OptionsPosW" Value="416"></Setting>
+			<Setting Name="OptionsPosH" Value="538"></Setting>
+			<Setting Name="OptionsPosM" Value="0"></Setting>
+		</GUI>
+	</Settings>
+</FolderMenu>

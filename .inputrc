@@ -1,0 +1,23 @@
+# Home Key
+"\e[7~":beginning-of-line
+"\e[1~": beginning-of-line
+"\eOH": beginning-of-line
+"\e[H": beginning-of-line
+
+
+# End Key
+"\e[8~":end-of-line
+"\e[4~": end-of-line
+"\eOF": end-of-line
+"\e[F": end-of-line
+
+
+# Delete Key
+#\"e[3~":delete-char
+
+# Insert Key
+"\e[2~":delete-char
+
+
+set convert-meta off
+set output-meta on

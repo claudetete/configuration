@@ -1,0 +1,146 @@
+! .Xdefault -- config file only for terminal
+
+! Author: Claude TETE <claude.tete@gmail.com>
+! Version: 1.0
+! Created: June 2010
+! Last-Updated: January 2013
+
+! only use with cygwin environment
+
+!!
+!!! RXVT
+!! fenetre
+! taille de la fenetre
+Rxvt*geometry:          160x60
+! couleur de fond (noir)
+Rxvt*background:        #000000
+! couleur du texte (blanc)
+Rxvt*foreground:        #ffffff
+! couleur du curseur (gris clair)
+Rxvt*cursorColor:       #d8d8d8
+! couleur de ??
+Rxvt*colorBD:           lightyellow
+! couleur de ??
+Rxvt*colorUL:           yellow
+! inversion des couleurs /* desactiver */
+Rxvt*reverseVideo:      false
+! cacher scrollbar (ascenseur)
+Rxvt*scrollBar:         false
+! ??
+Rxvt*scrollColor:       #000000
+!
+!! police
+! Misc:Fixed de taille 8 pour cygwin
+Rxvt*font:              Fixed:style=regular
+!Rxvt*font:              xft:Bitstream Vera Sans Mono:size=8
+!Rxvt*font:              Lucida Console-10
+!Rxvt*font:              xft:Bitstream Vera Sans mono:size=8
+!
+!! misc
+! garde 5500 lignes
+Rxvt*saveLines:         5500
+! bindings /* plus vraiment utile */
+Rxvt*keysym.Home:       \033[1~
+Rxvt*keysym.End:        \033[4~
+! ??
+rxvt*loginShell:        true
+! ??
+Rxvt*tintColor:         #dfdfdf
+!
+!! Color
+! black
+Rxvt*color0:            #676767
+Rxvt*color8:            #757575
+! red
+Rxvt*color1:            #EA6868
+Rxvt*color9:            #FF7272
+! green
+Rxvt*color2:            #ABCB8D
+Rxvt*color10:           #AFD78A
+! yellow
+!Rxvt*color3:            #E8AE5B
+Rxvt*color11:           #FFA75D
+! blue
+Rxvt*color4:            #71C5F4
+Rxvt*color12:           #67CDE9
+! magenta
+Rxvt*color5:            #E2BAF1
+Rxvt*color13:           #ECAEE9
+! cyan
+Rxvt*color6:            #21F1EA
+Rxvt*color14:           #36FFFC
+! white
+Rxvt*color7:            #F1F1F1
+Rxvt*color15:           #FFFFFF
+
+!!
+!!!  XTERM
+!! fenetre
+! couleur de fond (noir)
+xterm*background:       #000000
+! couleur du texte (blanc)
+xterm*foreground:       #ffffff
+! couleur du curseur (gris clair)
+xterm*cursorColor:      #d8d8d8
+! couleur de ??
+xterm*colorBD:          lightyellow
+! couleur de ??
+xterm*colorUL:          yellow
+! ??
+xterm*inheritPixmap:    true
+! inversion des couleurs /* desactiver */
+xterm*reverseVideo:     false
+! pas de scrollbar
+xterm*scrollBar:        false
+! ??
+xterm*scrollColor:      #000000
+! desactiver la toolbar
+Xterm*toolBar:          false
+! taille et position (petite et en bas a droite)
+xterm*geometry:         100x10+600+830
+!
+!! police
+!xterm*font:             xft:Bitstream Vera Sans Mono:size=8
+xterm*font:             Fixed:style=regular
+!xterm*font:             Lucida Console-10
+!xterm*font:             xft:Bitstream Vera Sans mono:size=8
+!
+!! misc
+! historique de 5500 lignes
+xterm*saveLines:        5500
+! bindings
+xterm*keysym.Home:      \033[1~
+xterm*keysym.End:       \033[4~
+! ??
+xterm*loginShell:       true
+! ??
+xterm*tintColor:        #dfdfdf
+! permet d'utiliser alt (dans emacs par exemple)
+xterm*metaSendsEscape:  true
+xterm*altSendsEscape:   true
+!
+!! Color
+! black
+xterm*color0:           #676767
+xterm*color8:           #757575
+! red
+xterm*color1:           #EA6868
+xterm*color9:           #FF7272
+! green
+xterm*color2:           #ABCB8D
+xterm*color10:          #AFD78A
+! yellow
+!xterm*color3:           #E8AE5B
+xterm*color11:          #FFA75D
+! blue
+xterm*color4:           #71C5F4
+xterm*color12:          #67CDE9
+! magenta
+xterm*color5:           #E2BAF1
+xterm*color13:          #ECAEE9
+! cyan
+xterm*color6:           #21F1EA
+xterm*color14:          #36FFFC
+! white
+xterm*color7:           #F1F1F1
+xterm*color15:          #FFFFFF
