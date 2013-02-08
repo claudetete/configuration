@@ -1,7 +1,7 @@
 ;;; MyShortcut.ahk --- add some shortcut for MS Windows to turn it in more
 ;;;                    user friendly work environment
 
-;; Copyright (c) 2012 Claude Tete
+;; Copyright (c) 2011-2013 Claude Tete
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -18,14 +18,16 @@
 ;;
 
 ;; Author: Claude Tete  <claude.tete@gmail.com>
-;; Version: 1.3
+;; Version: 1.4
 ;; Created: February 2011
-;; Last-Updated: May 2012
+;; Last-Updated: February 2013
 
 ;;; Commentary:
 ;;
 
 ;;; Change Log:
+;; 2013-02-04 (1.4)
+;;   add ms explorer alternative copy and all clavier+ shortcuts
 ;; 2012-05-05 (1.3)
 ;;   add clearcase
 ;; 2012-XX-XX (1.2)
@@ -102,6 +104,12 @@ return
 
 #If MouseIsOver("ahk_class Shell_TrayWnd")
 ~MButton::Send #{<}
+
+;; handler for hotkey
+MouseIsOver(WinTitle) {
+    MouseGetPos,,, Win
+    return WinExist(WinTitle . " ahk_id " . Win)
+}
 
 
 ;; Windows Switch with Mouse Wheel and Middle Button
@@ -195,39 +203,6 @@ Return
 ;#IfWinActive, ahk_class WinMergeWindowClassW
 ;XButton1::Alt
 
-;;
-;; MS WORD
-;;
-#IfWinActive, ahk_class OpusApp
-;; back
-XButton1::!Left
-;; next
-XButton2::!Right
-;; Ctrl+Click
-MButton::^LButton
-;; tmp
-;!SC029::
-;  MouseGetPos, X, Y
-;  MouseMove, 1050, 85, 0
-;  MouseClick
-;  MouseMove, %X%, %Y%, 0
-;Return
-
-;;
-;; MS EXCEL
-;;
-#IfWinActive,ahk_class XLMAIN
-;; back
-XButton1::!Left
-;; next
-XButton2::!Right
-
-
-;; handler for hotkey
-MouseIsOver(WinTitle) {
-    MouseGetPos,,, Win
-    return WinExist(WinTitle . " ahk_id " . Win)
-}
 
 
 ;;
@@ -284,3 +259,243 @@ CheckInOrOutOK()
   MouseClick
   MouseMove, %X%, %Y%, 0
 }
+
+;;
+;;; MS EXPLORER
+;;
+;; copy path and filename
+SetTitleMatchMode, Regex
+#IfWinActive, ahk_class Progman|WorkerW|CabinetWClass|ExploreWClass|#32770
+;; copy all path
+^+c::
+  clipboard := GetExplorerFilePath()
+Return
+;; copy only filename with extension
+^!c::
+  clipboard := GetExplorerFilePath()
+  SplitPath, clipboard, name
+  clipboard = %name%
+Return
+;; copy only path without filename
+^!+c::
+  clipboard := GetExplorerFilePath()
+  SplitPath, clipboard, , dir
+  clipboard = %dir%
+Return
+SetTitleMatchMode, 1
+;; get the file path from selected file
+GetExplorerFilePath()
+{
+  SetTitleMatchMode, Regex
+  ControlGetText myCurrentPath, Edit1, ahk_class Progman|WorkerW|CabinetWClass|ExploreWClass|#32770
+  file := GetExplorerSelectedFile()
+  file := myCurrentPath . "\" . file
+
+  Return file
+}
+;;; get the selected file path
+GetExplorerSelectedFile()
+{
+   global SoftwareName
+
+   ;; init filename
+   file = ""
+   ;; get all selected file
+   ControlGet, selectedFiles, List, Selected Col1, SysListView321, %WindowName%
+   Loop, Parse, selectedFiles, `n  ; Rows are delimited by linefeeds (`n).
+   {
+     If (A_Index = 1)
+     {
+       file := A_LoopField
+     }
+     Else
+     {
+       ; Indicate that several files are selected, we return only the first one
+       ErrorLevel := A_Index
+     }
+   }
+
+   if file = ""
+   {
+      MsgBox, 0x10, %SoftwareName%: error, Error: You must select a file.
+      return ""
+   }
+
+   Return file
+}
+
+;;
+;;; CMD
+;;
+;; copy paste shortcuts (from jixiuf at GitHub)
+#IfWinActive ahk_class ConsoleWindowClass
+^v::StringTypePaste(Clipboard)
+^y::StringTypePaste(Clipboard)
+#Esc::Send ,exit`n
+#IfWinActive
+StringTypePaste(p_str, p_condensenewlines=1)
+{
+  if (p_condensenewlines)
+  {
+    p_str:=RegExReplace(p_str, "[`r`n]+", "`n")
+  }
+  Send, % "{Raw}" p_str
+}
+
+;;
+;;; MISC SHORTCUTS
+;;
+;; non azerty character
+#é::É
+#è::È
+#ç::Ç
+#=::SendInput, {U+2260} ; not equal
+;; SC033 = ; (see key history in ahk)
+#SC033::SendInput, {U+2264} ; inf or equal
+;; SC034 = :
+#SC034::SendInput, {U+2265} ; up or equal
+
+;; (Win+N) run at start
+#n::
+  ;; virtual desktop on MS Windows
+  Run, D:/Users/ctete/tools/VirtuaWin/VirtuaWin.exe
+  ;; mouse gesture everywhere
+  Run, D:/Users/ctete/tools/StrokeIt/strokeit.exe
+  ;; outlook
+  Run, C:/Program Files/Microsoft Office/Office14/OUTLOOK.EXE
+  ;; clearcase explorer
+  Run, clearexplorer.exe
+  ;; enable symbol link under MS Windows XP
+  Run, D:/Users/ctete/tools/symlink-1.06-x86/senable.exe, D:/Users/ctete/tools/symlink-1.06-x86
+  ;; Use the mouse wheel on unfocus window like in linux
+  Run, D:/Users/ctete/tools/AutoHotKey/scripts/WinUnfocusMouseWheel.ahk
+  ;; have the mouse wheel working in clearquest
+  Run, D:/Users/ctete/tools/AutoHotKey/scripts/clearquest_mouse_wheel/clearquest_mouse_wheel.ahk, D:/Users/ctete/tools/AutoHotKey/scripts/clearquest_mouse_wheel
+  ;; tilda like for ms windows
+  Run, D:/Users/ctete/tools/AutoHotKey/scripts/QuahkeConsole.ahk
+  ;; increase number of repeat key
+  Run, D:/Users/ctete/tools/AutoHotKey/scripts/FastNavKeys.ahk
+  ;; move/resize like in KDE
+  Run, D:/Users/ctete/tools/AutoHotKey/scripts/KDE Mover-Sizer for Windows/KDE Mover-Sizer.exe, D:/Users/ctete/tools/AutoHotKey/scripts/KDE Mover-Sizer for Windows
+  ;; nice/quick menu anywhere to have shortcuts to all favorite folder
+  Run, D:/Users/ctete/tools/FolderMenu/FolderMenu.exe, D:/Users/ctete/tools/FolderMenu
+  ;; advanced clipboard
+  Run, D:/Users/ctete/tools/Framakey/Apps/DittoPortable/DittoPortable.exe
+  ;; make clearcase shortcut available everwhere
+  Run, D:/Users/ctete/tools/AutoHotKey/scripts/ClearCaseShortcut.ahk
+  ;; time tracking to be easy the weelky/monthly report
+  Run, D:/Users/ctete/PM4S/doc/rapport_hebdomadaire/TimeTracking_ctete.xlsx
+Return
+;; (Win+A) run software
+#a::Run, D:/Users/ctete/tools/OperaPortable/OperaPortable.exe
+;; (Win+Q) run calculator
+#q::Run, calc.exe
+;; (Win+S) run clearcase explorer
+#s::Run, clearexplorer.exe
+;; (Win+W) run cleerquest
+#w::Run, clearquest.exe
+;; (Win+X) run process explorer
+#x::Run, D:/Users/ctete/tools/ProcessExplorer/procexp.exe
+;; (Win+Z) run cubic explorer
+#z::Run, D:/Users/ctete/tools/CubicExplorer/CubicExplorer.exe
+
+;;  kill properties windows of clearcase
+#IfWinActive, ahk_exe cleardescribe.exe
+Escape::SendInput !{F4}
+#IfWinActive
+
+;; emacs
+#IfWinActive, ahk_exe emacs.exe
+;; re macro
+Pause::SendInput ^xe
+#IfWinActive
+
+;; PDF-XChange Viewer
+#IfWinActive, ahk_exe pdfxcview.exe
+;; outils zoom
+^!f8::SendInput !ozl
+;; outils selection
+^!f9::SendInput !obs
+;; outils main
+^!f10::SendInput !obm
+#IfWinActive
+
+;; RTRT Studio
+#IfWinActive, ahk_exe studio.exe
+;; export in html
+Pause::
+  SendInput !fe
+  Sleep, 100
+  SendInput {Enter}
+  Sleep, 100
+  SendInput {Enter}
+Return
+;; close current tab
+^w::SendInput !fc
+#IfWinActive
+
+;; excel
+#IfWinActive, ahk_exe excel.exe
+;; back
+XButton1::!Left
+;; next
+XButton2::!Right
+;; easy shortcut one shot with pause
+Pause::SendInput {Tab}{Tab}{Tab}{Down}{Home}
+;; insert file
+f4::
+  SendInput !sj
+  Sleep 300
+  SendInput !{Tab}
+  Sleep 100
+  SendInput !P
+  Sleep 500
+  SendInput +{Tab}{down}
+Return
+;; multiple up
+CtrlBreak::SendInput {Up}{Up}{Up}{Up}{Up}{Up}{Up}{Up}{Up}{Up}{Up}
+;; paste with options
++Insert::^!v
+;; search
+f3::SendInput +{f4}
+#IfWinActive
+
+;; word
+#IfWinActive, ahk_exe WINWORD.EXE
+;; back
+XButton1::!Left
+;; next
+XButton2::!Right
+;; Ctrl+Click
+MButton::^LButton
+!SC001:: ;; azerty ²
+  ;; zoom to 84%
+  SendInput !nw
+  Sleep, 100
+  SendInput !e84
+  Sleep, 100
+  SendInput {Enter}
+Return
+!SC002:: ;; azerty &
+  ;; show/hide comments
+  SendInput !ra{Down}{Enter}
+Return
+!SC003:: ;; azerty é
+  ;; show/hide all characters
+  SendInput ^+_
+Return
+!SC004:: ;; azerty "
+  ;; show/hide style pane
+  SendInput ^!+s
+Return
+!SC005:: ;; azerty '
+  ;; show/hide tree
+  SendInput ^!$
+Return
+;; delete word
+!d::^Del
+;; search
+f3::SendInput +{f4}
+;; easy shortcut
+Pause::SendInput {End}+{Home}^v{Down}{Down}{Down}{Down}
+#IfWinActive

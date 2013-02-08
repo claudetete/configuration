@@ -9,4 +9,6 @@
 --nogroup
 
 # add the type of autohotkey
-# --type-add=ahk=.ahk
+--type-set=ahk=.ahk
+# add the type of rtrt script
+--type-set=ptu=.ptu

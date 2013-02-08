@@ -17,15 +17,18 @@
 ;;
 
 ;; Author: Claude Tete  <claude.tete@gmail.com>
-;; Version: 1.4
+;; Version: 1.5
 ;; Created: February 2012
-;; Last-Updated: January 2013
+;; Last-Updated: February 2013
 
 ;;; Commentary:
 ;;
 ;; TODO: cannot get file path from tree version window ?
 
 ;;; Change Log:
+;; 2013-02-04 (1.5)
+;;   add emacs + use regex for windows explorer title + fix bug when change main
+;;   shortcut
 ;; 2013-01-11 (1.4)
 ;;    remove clearcase path bin, use PATH variable
 ;; 2013-01-09 (1.3)
@@ -59,7 +62,7 @@ SetWorkingDir %A_ScriptDir%
 ;; name of script
 SoftwareName = ClearCaseShortcut
 ;; version of script
-SoftwareVersion = 1.4
+SoftwareVersion = 1.5
 
 ;
 ;;
@@ -96,10 +99,12 @@ GoSub, LoadIniFile
 ;;
 ;;; MAIN SHORTCUT
 ;; init prefix hotkey
-Hotkey, IfWinActive, ahk_class ExploreWClass
-HotKey, %MainShortcut%, CheckShortcutExplorer2
-Hotkey, IfWinActive, ahk_class CabinetWClass
-HotKey, %MainShortcut%, CheckShortcutExplorer1
+;; regex title match
+SetTitleMatchMode, Regex
+Hotkey, IfWinActive, %ExplorerTitle%
+HotKey, %MainShortcut%, CheckShortcutExplorer
+;; normal title match
+SetTitleMatchMode, 1
 Hotkey, IfWinActive, %ClearCaseFindCheckoutTitle%
 Hotkey, %MainShortcut%, CheckShortcutFindCheckout
 Hotkey, IfWinActive, %ClearCaseHistoryTitle%
@@ -110,6 +115,8 @@ Hotkey, IfWinActive, %ClearCaseTreeVersionTitle%
 Hotkey, %MainShortcut%, CheckShortcutTreeVersion
 Hotkey, IfWinActive, %UltraEditTitle%
 Hotkey, %MainShortcut%, CheckShortcutUltraEdit
+Hotkey, IfWinActive, %EmacsTitle%
+Hotkey, %MainShortcut%, CheckShortcutEmacs
 Hotkey, IfWinActive
 
 ;
@@ -147,11 +154,8 @@ return
 ;===============================================================================
 ;;
 ;;; sub function to call function with parameter only for explorer
-CheckShortcutExplorer1:
-  CheckShortcutExplorer("ahk_class CabinetWClass")
-Return
-CheckShortcutExplorer2:
-  CheckShortcutExplorer("ahk_class ExploreWClass")
+CheckShortcutExplorer:
+  CheckShortcutExplorer(ExplorerTitle)
 Return
 
 ;;
@@ -235,9 +239,11 @@ Return
 ;;; get the selected file
 GetExplorerFilePath(WindowName)
 {
+  SetTitleMatchMode, Regex
   ControlGetText myCurrentPath, Edit1, %WindowName%
   file := GetExplorerSelectedFile(WindowName)
   file := myCurrentPath . "\" . file
+  SetTitleMatchMode, 1
 
   Return file
 }
@@ -822,6 +828,85 @@ GetUltraEditDir()
   Return dirPath
 }
 
+;
+;;
+;;; EMACS
+;===============================================================================
+;;
+;;; sub function to call function (needed to not define global variable)
+CheckShortcutEmacs:
+  CheckShortcutEmacsFunction()
+Return
+;;
+;;; check shortcut after prefix and run associated function
+CheckShortcutEmacsFunction()
+{
+  global CheckOutShortcut, CheckInShortcut, UnCheckOutShortcut, HistoryShortcut, ComparePrevShortcut
+  global TreeVersionShortcut, ExplorerShortcut, FindCheckoutShortcut, ElementPropertiesShortcut
+  global VersionPropertiesShortcut, EmacsTitle
+
+  ;; capture next key
+  Input, MyKey, L1 T2, {Escape}
+  ;; when timeout quit
+  if ErrorLevel = Timeout
+    return
+  ;; block any input from user
+  BlockInput, On
+  ;; when CheckOutShortcut -> Checkout
+  if MyKey = %CheckOutShortcut%
+  {
+    SendInput, {Alt Down}x{Alt Up}clearcase-gui-checkout{Enter}
+  }
+  ;; when CheckInShortcut -> Checkin
+  else if MyKey = %CheckInShortcut%
+  {
+    SendInput, {Alt Down}x{Alt Up}clearcase-gui-checkin{Enter}
+  }
+  ;; when UnCheckOutShortcut -> Uncheckout
+  else if MyKey = %UnCheckOutShortcut%
+  {
+    SendInput, {Alt Down}x{Alt Up}clearcase-gui-uncheckout{Enter}
+  }
+  ;; when HistoryShortcut -> History
+  else if MyKey = %HistoryShortcut%
+  {
+    SendInput, {Alt Down}x{Alt Up}clearcase-gui-history{Enter}
+  }
+  ;; when ComparePrevShortcut -> Diff
+  else if MyKey = %ComparePrevShortcut%
+  {
+    SendInput, {Alt Down}x{Alt Up}clearcase-gui-diff-prev{Enter}
+  }
+  ;; when TreeVersionShortcut -> Tree Version
+  else if MyKey = %TreeVersionShortcut%
+  {
+    SendInput, {Alt Down}x{Alt Up}clearcase-gui-version-tree{Enter}
+  }
+  ;; when ExplorerShortcut -> ClearCase Explorer
+  else if MyKey = %ExplorerShortcut%
+  {
+    SendInput, {Alt Down}x{Alt Up}clearcase-gui-explorer{Enter}
+  }
+  ;; when FindCheckoutShortcut -> Find Checkout
+  else if MyKey = %FindCheckoutShortcut%
+  {
+    SendInput, {Alt Down}x{Alt Up}clearcase-gui-find-checkout{Enter}
+  }
+  ;; when ElementPropertiesShortcut -> Element Properties
+  else if MyKey = %ElementPropertiesShortcut%
+  {
+    SendInput, {Alt Down}x{Alt Up}clearcase-gui-properties{Enter}
+  }
+  ;; when VersionPropertiesShortcut -> Version Properties
+  else if MyKey = %VersionPropertiesShortcut%
+  {
+    SendInput, {Alt Down}x{Alt Up}clearcase-gui-version-properties{Enter}
+  }
+  ;; other characters are not considered
+  ;; unblock any input from user
+  BlockInput, Off
+}
+Return
 
 ;
 ;;
@@ -1160,7 +1245,6 @@ MenuOptions:
   Gui, Options_:Add, Text, xs w%labelWidth% Section, Version Properties:
   ;; add a edit area to enter hotkey for version properties shortcut
   Gui, Options_:Add, Hotkey, ys-4 vKeyVersionProperties, %VersionPropertiesShortcut%
-
   ;;
   ;; add a button "SetShortcuts" will go to the sub SetShortcut ((10 + 270 - 70 - 10 - 70 + 10) / 2 = 60)
   Gui, Options_:Add, Button, x70 w70 Section Default, OK
@@ -1193,51 +1277,58 @@ Options_ButtonOK:
     Key = % "#" Key
   }
   ;; unset previous shortcut
-  Hotkey, IfWinActive, ahk_class CabinetWClass
-  HotKey, %MainShortcut%, CheckShortcutExplorer1, Off
-  Hotkey, IfWinActive, ahk_class ExploreWClass
-  HotKey, %MainShortcut%, CheckShortcutExplorer2, Off
-  Hotkey, IfWinActive, Find Checkouts
+  SetTitleMatchMode, Regex
+  Hotkey, IfWinActive, %ExplorerTitle%
+  HotKey, %MainShortcut%, CheckShortcutExplorer, Off
+  SetTitleMatchMode, 1
+  Hotkey, IfWinActive, %ClearCaseFindCheckoutTitle%
   Hotkey, %MainShortcut%, CheckShortcutFindCheckout, Off
-  Hotkey, IfWinActive, Rational ClearCase History Browser -
+  Hotkey, IfWinActive, %ClearCaseHistoryTitle%
   Hotkey, %MainShortcut%, CheckShortcutHistory, Off
-  Hotkey, IfWinActive, Rational ClearCase Explorer - ahk_exe clearexplorer.exe
+  Hotkey, IfWinActive, %ClearCaseExplorerTitle%
   Hotkey, %MainShortcut%, CheckShortcutClearCaseExplorer, Off
-  Hotkey, IfWinActive, UltraEdit-32 - [
+  Hotkey, IfWinActive, %UltraEditTitle%
   Hotkey, %MainShortcut%, CheckShortcutUltraEdit, Off
+  Hotkey, IfWinActive, %EmacsTitle%
+  Hotkey, %MainShortcut%, CheckShortcutEmacs, Off
   Hotkey, IfWinActive
   ;; when key already exist
   HotKey, %Key%, , UseErrorLevel
-  If ErrorLevel = 0
+;;  MsgBox, toto, %ErrorLevel%
+  If ErrorLevel = 6
   {
     ;; enable new shortcut
+    SetTitleMatchMode, Regex
+    Hotkey, IfWinActive, %ExplorerTitle%
     HotKey, %Key%, , On
-  }
-  else
-  {
-    ;; when it is not a nonexistent hotkey in the current script
-    If ErrorLevel != 5
-    {
-      MsgBox, 0x10, %SoftwareName%: error, Error: Wrong shortcuts
-    }
-    else
-    {
-      ;; the shortcut do not already exist in the current script
-    }
+    SetTitleMatchMode, 1
+    Hotkey, IfWinActive, %ClearCaseFindCheckoutTitle%
+    Hotkey, %Key%, , On
+    Hotkey, IfWinActive, %ClearCaseHistoryTitle%
+    Hotkey, %Key%, , On
+    Hotkey, IfWinActive, %ClearCaseExplorerTitle%
+    Hotkey, %Key%, , On
+    Hotkey, IfWinActive, %UltraEditTitle%
+    Hotkey, %Key%, , On
+    Hotkey, IfWinActive, %EmacsTitle%
+    Hotkey, %Key%, , On
+    Hotkey, IfWinActive
   }
   ;; set new shortcut
-  Hotkey, IfWinActive, ahk_class CabinetWClass
+  SetTitleMatchMode, Regex
+  Hotkey, IfWinActive, %ExplorerTitle%
   HotKey, %Key%, CheckShortcutExplorer1
-  Hotkey, IfWinActive, ahk_class ExploreWClass
-  HotKey, %Key%, CheckShortcutExplorer2
-  Hotkey, IfWinActive, Find Checkouts
+  SetTitleMatchMode, 1
+  Hotkey, IfWinActive, %ClearCaseFindCheckoutTitle%
   Hotkey, %Key%, CheckShortcutFindCheckout
-  Hotkey, IfWinActive, Rational ClearCase History Browser -
+  Hotkey, IfWinActive, %ClearCaseHistoryTitle%
   Hotkey, %Key%, CheckShortcutHistory
-  Hotkey, IfWinActive, Rational ClearCase Explorer - ahk_exe clearexplorer.exe
+  Hotkey, IfWinActive, %ClearCaseExplorerTitle%
   Hotkey, %Key%, CheckShortcutClearCaseExplorer
-  Hotkey, IfWinActive, UltraEdit-32 - [
+  Hotkey, IfWinActive, %UltraEditTitle%
   Hotkey, %Key%, CheckShortcutUltraEdit
+  Hotkey, IfWinActive, %EmacsTitle%
+  Hotkey, %Key%, CheckShortcutEmacs
   Hotkey, IfWinActive
   ;; set new shortcut and write in ini file
   MainShortcut = %Key%
@@ -1261,11 +1352,13 @@ LoadIniFile:
   IniRead, VersionPropertiesShortcut, %IniFile%, Shortcut, VersionPropertiesShortcut, v
   ;;
   ;; window titles
+  IniRead, ExplorerTitle,              %IniFile%, Title, Explorer1Title, ahk_class CabinetWClass|ExploreWClass
   IniRead, ClearCaseFindCheckoutTitle, %IniFile%, Title, ClearCaseFindCheckoutTitle, Find Checkouts ahk_exe clearfindco.exe
   IniRead, ClearCaseHistoryTitle,      %IniFile%, Title, ClearCaseHistoryTitle, Rational ClearCase History Browser - ahk_exe clearhistory.exe
   IniRead, ClearCaseExplorerTitle,     %IniFile%, Title, ClearCaseExplorerTitle, Rational ClearCase Explorer - ahk_exe clearexplorer.exe
   IniRead, ClearCaseTreeVersionTitle,  %IniFile%, Title, ClearCaseTreeVersionTitle, ahk_exe clearvtree.exe
   IniRead, UltraEditTitle,             %IniFile%, Title, UltraEditTitle, UltraEdit-32 - [ ahk_exe uedit32.exe
+  IniRead, EmacsTitle,                 %IniFile%, Title, EmacsTitle, ahk_exe emacs.exe
 Return
 
 ;;
@@ -1294,11 +1387,13 @@ MenuCreateSaveIni:
   IniWrite, %ElementPropertiesShortcut%, %IniFile%, Shortcut, ElementPropertiesShortcut
   IniWrite, %VersionPropertiesShortcut%, %IniFile%, Shortcut, VersionPropertiesShortcut
   ;; Section Title
+  IniWrite, %ExplorerTitle%,              %IniFile%, Title, ExplorerTitle
   IniWrite, %ClearCaseFindCheckoutTitle%, %IniFile%, Title, ClearCaseFindCheckoutTitle
   IniWrite, %ClearCaseHistoryTitle%,      %IniFile%, Title, ClearCaseHistoryTitle
   IniWrite, %ClearCaseExplorerTitle%,     %IniFile%, Title, ClearCaseExplorerTitle
   IniWrite, %ClearCaseTreeVersionTitle%,  %IniFile%, Title, ClearCaseTreeVersionTitle
   IniWrite, %UltraEditTitle%,             %IniFile%, Title, UltraEditTitle
+  IniWrite, %EmacsTitle%,                 %IniFile%, Title, EmacsTitle
   ;;
   ;; display a traytip to indicate file save
   TrayTip, %SoftwareName%, %IniFile% file saved., 5, 1
