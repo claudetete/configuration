@@ -2,7 +2,7 @@
 <FolderMenu>
 	<Menu>
 		<Item ID="1" Type="Menu" Name="PM4S" Icon="C:\WINDOWS\system32\SHELL32.dll,38" Size="16">
-			<Item Type="Item" Name="PM4S_doc" Path="Z:\a2kc\doc\qualite\pm4s" Icon="C:\WINDOWS\system32\SHELL32.dll,126" Size=""></Item>
+			<Item Type="Item" Name="PM4S_doc" Path="Z:\a2kc\doc\qualite\pm4s" Icon="C:\WINDOWS\system32\SHELL32.dll,126" Size="16"></Item>
 			<Item Type="ItemMenu" Name="PM4S_src" Path="Z:\a2kc\soft\ccn4\ccn4_pm4s" Icon="C:\WINDOWS\system32\SHELL32.dll,38" Size="16" Depth="" File="" Ext="*" Drive=""></Item>
 			<Item Type="ItemMenu" Name="PM4S_tst" Path="Z:\a2kc\test\CCN4\test_s\pm4s" Icon="C:\WINDOWS\system32\SHELL32.dll,205" Size="16" Depth="" File="" Ext="*" Drive=""></Item>
 			<Item Type="Item" Name="PM4S_liv" Path="Z:\a2kc\liv\bin\ccn4" Icon="C:\WINDOWS\system32\SHELL32.dll,158" Size="16"></Item>
@@ -33,9 +33,16 @@
 				<Item Type="ItemMenu" Name="ParPUMA_src_AC3X_(o2kc)" Path="Z:\o2kc\test\DSP_ond\test_4_puma\config\ParPUMA" Icon="" Size="" Depth="" File="" Ext="*" Drive=""></Item>
 			</Item>
 			<Item ID="39" Type="Menu" Name="PARPUMA_liv" Icon="shell32.dll,158" Size="16">
-				<Item Type="Item" Name="ParPUMA_liv_AC3_(a2kc)" Path="Z:\a2kc\liv\config\CCN4\parPM4S" Icon="" Size=""></Item>
+				<Item Type="Item" Name="ParPUMA_liv_AC3_(a2kc)" Path="Z:\a2kc\liv\config\CCN4\parPuma" Icon="" Size=""></Item>
 				<Item Type="Item" Name="ParPUMA_liv_AC3X_(o2kc)" Path="Z:\o2kc\liv\config\sharc\puma\ParPuma" Icon="" Size=""></Item>
 			</Item>
+		</Item>
+		<Item ID="42" Type="Menu" Name="TCMSLIBC" Icon="C:\WINDOWS\system32\SHELL32.dll,38" Size="16">
+			<Item Type="Item" Name="TCMSLIBC_doc" Path="Z:\tcmslibc\doc\02_production\commun" Icon="C:\WINDOWS\system32\SHELL32.dll,126" Size="16"></Item>
+			<Item Type="ItemMenu" Name="TCMSLIBC_src" Path="Z:\tcmslibc\soft\embedded" Icon="C:\WINDOWS\system32\SHELL32.dll,38" Size="16" Depth="" File="" Ext="*" Drive=""></Item>
+			<Item Type="ItemMenu" Name="TCMSLIBC_tst" Path="Z:\tcmslibc\test" Icon="C:\WINDOWS\system32\SHELL32.dll,205" Size="16" Depth="" File="" Ext="*" Drive=""></Item>
+			<Item Type="Item" Name="TCMSLIBC_liv" Path="Z:\tcmslibc\liv\bin\embedded" Icon="C:\WINDOWS\system32\SHELL32.dll,158" Size="16"></Item>
+			<Item Type="ItemMenu" Name="TCMSLIBC_tmp" Path="D:\Users\ctete\TCMSLIBC" Icon="" Size="16" Depth="" File="" Ext="*" Drive=""></Item>
 		</Item>
 		<Item Type="Separator" Name="- - - - -"></Item>
 		<Item Type="ItemMenu" Name="CCView (M:)" Path="M:\" Icon="" Size="" Depth="2" File="" Ext="*" Drive=""></Item>
@@ -45,7 +52,7 @@
 		<Item Type="Item" Name="HOME Win" Path="D:\Documents and Settings\100516805\Application Data" Icon="" Size=""></Item>
 		<Item Type="Item" Name="HOME Cygwin" Path="D:\Documents and Settings\100516805\Application Data" Icon="" Size=""></Item>
 		<Item Type="Separator" Name="- - - - -"></Item>
-		<Item ID="53" Type="Menu" Name="Apps" Icon="" Size="16">
+		<Item ID="62" Type="Menu" Name="Apps" Icon="" Size="16">
 			<Item Type="Item" Name="ClearCase" Path="C:\Program Files\IBM\RationalSDLC\ClearCase\bin\clearexplorer.exe" Icon="" Size="32"></Item>
 			<Item Type="Item" Name="ClearQuest" Path="C:\Program Files\IBM\RationalSDLC\ClearQuest\clearquest.exe" Icon="" Size="32"></Item>
 			<Item Type="Item" Name="Command Prompt Here" Path="cmd.exe /k cd /D %F_CurrentDir%" Icon="cmd.exe" Size="32"></Item>
@@ -57,8 +64,8 @@
 			<Item Type="Item" Name="RTRT" Path="C:\Program Files\Rational\TestRealTime\bin\intel\win32\studio.exe" Icon="" Size="32"></Item>
 		</Item>
 		<Item Type="Separator" Name="- - - - -"></Item>
-		<Item ID="64" Type="Menu" Name="FolderMenu" Icon="D:\Users\ctete\tools\FolderMenu\FolderMenu.exe,0" Size="16">
-			<Item ID="65" Type="Menu" Name="Files" Icon="shell32.dll,1" Size="16">
+		<Item ID="73" Type="Menu" Name="FolderMenu" Icon="D:\Users\ctete\tools\FolderMenu\FolderMenu.exe,0" Size="16">
+			<Item ID="74" Type="Menu" Name="Files" Icon="shell32.dll,1" Size="16">
 				<Item Type="Item" Name="rxvt.exe" Path="D:\cygwin\bin\rxvt.exe -display :0 -sl 10000 -fg white -bg black -fn Terminal-8 -fb Terminal-8 -tn rxvt  -e /bin/zsh --login -i" Icon="" Size=""></Item>
 				<Item Type="Item" Name="AIMP2" Path="D:\Users\ctete\tools\Liberkey\Apps\AIMP\AIMPLKL.exe" Icon="" Size=""></Item>
 				<Item Type="Item" Name="Opera" Path="D:\Users\ctete\tools\OperaPortable\OperaPortable.exe" Icon="" Size=""></Item>
@@ -72,12 +79,12 @@
 				<Item Type="Item" Name="Win7-x64" Path="&quot;C:\Program Files\Oracle\VirtualBox\VirtualBox.exe&quot; --comment &quot;Win7-x64&quot; --startvm &quot;f26706d5-f115-4b63-978f-fc8afc680735&quot;" Icon="C:\Program Files\Oracle\VirtualBox\VirtualBox.exe,0" Size=""></Item>
 				<Item Type="Item" Name="Xubuntu" Path="C:\Program Files\Oracle\VirtualBox\VirtualBox.exe --comment &quot;test&quot; --startvm &quot;04a54f08-f436-48f1-a1ab-4b8289f1cd41&quot;" Icon="C:\Program Files\Oracle\VirtualBox\VirtualBox.exe,0" Size=""></Item>
 			</Item>
-			<Item ID="78" Type="Menu" Name="WebSites" Icon="%ProgramFiles%\Internet Explorer\iexplore.exe,1" Size=""></Item>
-			<Item ID="79" Type="Menu" Name="Registry" Icon="regedit.exe" Size="">
+			<Item ID="87" Type="Menu" Name="WebSites" Icon="%ProgramFiles%\Internet Explorer\iexplore.exe,1" Size=""></Item>
+			<Item ID="88" Type="Menu" Name="Registry" Icon="regedit.exe" Size="">
 				<Item Type="Item" Name="HKCU Run" Path="HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run" Icon="" Size=""></Item>
 				<Item Type="Item" Name="HKLM Run" Path="HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" Icon="" Size=""></Item>
 			</Item>
-			<Item ID="82" Type="Menu" Name="Filters" Icon=".\FolderMenu.exe,-207" Size="">
+			<Item ID="91" Type="Menu" Name="Filters" Icon=".\FolderMenu.exe,-207" Size="">
 				<Item Type="Item" Name="Toggle Hidden Files" Path="_ToggleHidden" Icon="" Size=""></Item>
 				<Item Type="Separator" Name="- - - - -"></Item>
 				<Item Type="Item" Name="All Files" Path="*.*" Icon="" Size=""></Item>
@@ -198,8 +205,8 @@
 			<Setting Name="CurrentVer" Value="3.1.2.2"></Setting>
 		</Others>
 		<GUI>
-			<Setting Name="OptionsPosX" Value="1208"></Setting>
-			<Setting Name="OptionsPosY" Value="272"></Setting>
+			<Setting Name="OptionsPosX" Value="346"></Setting>
+			<Setting Name="OptionsPosY" Value="231"></Setting>
 			<Setting Name="OptionsPosW" Value="416"></Setting>
 			<Setting Name="OptionsPosH" Value="538"></Setting>
 			<Setting Name="OptionsPosM" Value="0"></Setting>

@@ -17,16 +17,21 @@
 ;;
 
 ;; Author: Claude Tete  <claude.tete@gmail.com>
-;; Version: 1.5
+;; Version: 1.7
 ;; Created: February 2012
-;; Last-Updated: February 2013
+;; Last-Updated: April 2013
 
 ;;; Commentary:
 ;;
 ;; TODO: cannot get file path from tree version window ?
 
 ;;; Change Log:
-;; 2013-02-04 (1.5)
+;; 2013-04-17 (1.7)
+;;    contextual menu can be disable + add to source control + fix bug with
+;;    ultraedit
+;; 2013-04-16 (1.6)
+;;   remove emacs + add contextual menu + edit config spec
+;; 2013-02-26 (1.5)
 ;;   add emacs + use regex for windows explorer title + fix bug when change main
 ;;   shortcut
 ;; 2013-01-11 (1.4)
@@ -55,6 +60,8 @@ SendMode Input
 SetWorkingDir %A_ScriptDir%
 ;; only on instance of this script
 #SingleInstance force
+;; regex title match
+SetTitleMatchMode, Regex
 
 ;
 ;;
@@ -62,7 +69,9 @@ SetWorkingDir %A_ScriptDir%
 ;; name of script
 SoftwareName = ClearCaseShortcut
 ;; version of script
-SoftwareVersion = 1.5
+SoftwareVersion = 1.6
+;; init for contextual menu
+ContextMenu_OK := False
 
 ;
 ;;
@@ -97,74 +106,68 @@ GoSub, LoadIniFile
 
 ;
 ;;
-;;; MAIN SHORTCUT
-;; init prefix hotkey
-;; regex title match
-SetTitleMatchMode, Regex
-Hotkey, IfWinActive, %ExplorerTitle%
-HotKey, %MainShortcut%, CheckShortcutExplorer
-;; normal title match
-SetTitleMatchMode, 1
-Hotkey, IfWinActive, %ClearCaseFindCheckoutTitle%
-Hotkey, %MainShortcut%, CheckShortcutFindCheckout
-Hotkey, IfWinActive, %ClearCaseHistoryTitle%
-Hotkey, %MainShortcut%, CheckShortcutHistory
-Hotkey, IfWinActive, %ClearCaseExplorerTitle%
-Hotkey, %MainShortcut%, CheckShortcutClearCaseExplorer
-Hotkey, IfWinActive, %ClearCaseTreeVersionTitle%
-Hotkey, %MainShortcut%, CheckShortcutTreeVersion
-Hotkey, IfWinActive, %UltraEditTitle%
-Hotkey, %MainShortcut%, CheckShortcutUltraEdit
-Hotkey, IfWinActive, %EmacsTitle%
-Hotkey, %MainShortcut%, CheckShortcutEmacs
+;;; TITLE GROUP
+GroupAdd, GroupWindowTitle, %ExplorerTitle%
+GroupAdd, GroupWindowTitle, %ClearCaseFindCheckoutTitle%
+GroupAdd, GroupWindowTitle, %ClearCaseHistoryTitle%
+GroupAdd, GroupWindowTitle, %ClearCaseExplorerTitle%
+GroupAdd, GroupWindowTitle, %ClearCaseTreeVersionTitle%
+GroupAdd, GroupWindowTitle, %UltraEditTitle%
+
+;
+;;
+;;; SHORTCUT
+;; init prefix hotkey and contextual menu
+HotKey, IfWinActive, ahk_group GroupWindowTitle
+Hotkey, %MainShortcut%, CheckShortcut
+if ContextMenuEnable = 1
+{
+  ;; enable contextual
+  HotKey, $RButton, RightClickButton
+  HotKey, $RButton Up, RightClickUpButton
+}
 Hotkey, IfWinActive
 
 ;
 ;;
 ;;; MENU
-Menu, TRAY, Icon, clearexplorer.exe
+Menu, Tray, Icon, clearexplorer.exe
 ;; Delete the current menu
-Menu, tray, NoStandard
+Menu, Tray, NoStandard
 ;; Add the item About in the menu
-Menu, tray, add, About, MenuAbout
+Menu, Tray, add, About, MenuAbout
 ;; Add the item Help in the menu
-Menu, tray, add, Help, MenuHelp
+Menu, Tray, add, Help, MenuHelp
 ;; Creates a separator line.
-Menu, tray, add
+Menu, Tray, add
 ;; Add the item Shortcuts in the menu
-Menu, tray, add, Options, MenuOptions
+Menu, Tray, add, Options, MenuOptions
 ;; Add the item Reload in the menu
-Menu, tray, add, Reload .ini file, MenuReload
+Menu, Tray, add, Reload .ini file, MenuReload
 ;; Add the item Edit ini in the menu
-Menu, tray, add, Edit .ini file, MenuEditIni
+Menu, Tray, add, Edit .ini file, MenuEditIni
 ;; Add the item Create/Save ini in the menu
-Menu, tray, add, Create/Save .ini file, MenuCreateSaveIni
+Menu, Tray, add, Create/Save .ini file, MenuCreateSaveIni
 ;; Creates a separator line.
-Menu, tray, add
+Menu, Tray, add
 ;; add the standard menu
-Menu, tray, Standard
+Menu, Tray, Standard
 
 
 ;; End of script
 return
 
+
 ;
 ;;
-;;; EXPLORER
+;;; INPUT
+;===============================================================================
 ;===============================================================================
 ;;
-;;; sub function to call function with parameter only for explorer
-CheckShortcutExplorer:
-  CheckShortcutExplorer(ExplorerTitle)
-Return
-
-;;
 ;;; capture next key and execute associated function
-CheckShortcutExplorer(WindowName)
-{
-  global CheckOutShortcut, CheckInShortcut, UnCheckOutShortcut, HistoryShortcut, ComparePrevShortcut
-  global TreeVersionShortcut, ExplorerShortcut, FindCheckoutShortcut, ElementPropertiesShortcut
-  global VersionPropertiesShortcut
+CheckShortcut:
+  ;; detect active window
+  WinName := GetActiveWindowName()
 
   ;; capture next key
   Input, MyKey, L1 T2, {Escape}
@@ -174,76 +177,174 @@ CheckShortcutExplorer(WindowName)
   ;; when CheckOutShortcut Checkout
   if MyKey = %CheckOutShortcut%
   {
-    file := GetExplorerFilePath(WindowName)
-    CCCheckout(file)
+    ShowCheckout(WinName)
   }
   ;; when CheckInShortcut -> Checkin
   else if MyKey = %CheckInShortcut%
   {
-    file := GetExplorerFilePath(WindowName)
-    CCCheckin(file)
+    ShowCheckIn(WinName)
   }
   ;; when UnCheckOutShortcut -> Uncheckout
   else if MyKey = %UnCheckOutShortcut%
   {
-    file := GetExplorerFilePath(WindowName)
-    CCUncheckout(file)
+    ShowUnCheckOut(WinName)
   }
   ;; when HistoryShortcut -> History
   else if MyKey = %HistoryShortcut%
   {
-    file := GetExplorerFilePath(WindowName)
-    CCHistory(file)
+    ShowHistory(WinName)
   }
   ;; when ComparePrevShortcut -> Diff
   else if MyKey = %ComparePrevShortcut%
   {
-    file := GetExplorerFilePath(WindowName)
-    CCDiff(file)
+    ShowComparePrev(WinName)
   }
   ;; when TreeVersionShortcut -> Tree Version
   else if MyKey = %TreeVersionShortcut%
   {
-    file := GetExplorerFilePath(WindowName)
-    CCTreeVersion(file)
+    ShowTreeVersion(WinName)
   }
   ;; when ExplorerShortcut -> ClearCase Explorer
   else if MyKey = %ExplorerShortcut%
   {
-    dir := GetExplorerDirPath(WindowName)
-    CCExplorer(dir)
+    ShowExplorer(WinName)
   }
   ;; when FindCheckoutShortcut -> Find Checkout
   else if MyKey = %FindCheckoutShortcut%
   {
-    dir := GetExplorerDirPath(WindowName)
-    CCFindCheckout(dir)
+    ShowFindCheckout(WinName)
   }
   ;; when ElementPropertiesShortcut -> Element Properties
   else if MyKey = %ElementPropertiesShortcut%
   {
-    file := GetExplorerFilePath(WindowName)
-    CCElementProperties(file)
+    ShowElementProperties(WinName)
   }
   ;; when VersionPropertiesShortcut -> Version Properties
   else if MyKey = %VersionPropertiesShortcut%
   {
-    file := GetExplorerFilePath(WindowName)
-    CCVersionProperties(file)
+    ShowVersionProperties(WinName)
+  }
+  ;; when AddToSourceControlShortcut -> Add to Source Control
+  else if MyKey = %AddToSourceControlShortcut%
+  {
+    ShowAddToSourceControl(WinName)
+  }
+  ;; when VersionPropertiesShortcut -> Version Properties
+  else if MyKey = %EditConfigSpecShortcut%
+  {
+    ContextMenuWindowName = %WinName%
+    GoSub, EditConfigSpecMenu
   }
   ;; other characters are not considered
+Return
+
+;;
+;;; call sub function to manage context menu
+RightClickButton:
+  if ContextMenuEnable = 1
+  {
+    IfWinActive, ahk_group GroupWindowTitle
+    {
+      ;; call contextual menu only after a timer
+      SetTimer, ContextMenu, %ContextMenuTime%
+    }
+    else
+    {
+      ;; not a covered app
+      Send, {RButton Down}
+    }
+  }
+  else
+  {
+    ;; contextual menu is disable
+    Send, {RButton Down}
+  }
+Return
+
+;;
+;;; send right click up
+RightClickUpButton:
+  if ContextMenuEnable = 1
+  {
+    ;; disable timer
+    SetTimer, ContextMenu, off
+
+    IfWinActive, ahk_group GroupWindowTitle
+    {
+      Send, {RButton Down}{RButton Up}
+    }
+    else
+    {
+      Send, {RButton Up}
+    }
+  }
+  else
+  {
+    ;; contextual menu is disable
+    Send, {RButton Up}
+  }
+Return
+
+;;
+;;; Contextual Menu handler
+ContextMenu:
+{
+  ;; disable timer for right click
+  SetTimer, ContextMenu, off
+
+ ;; do a left click to select
+  MouseClick, L, , , , 0
+
+  ;; after show contextual menu it is not the active window
+  ContextMenuWindowName := GetActiveWindowName()
+
+  if StrLen(ContextMenuWindowName)
+  {
+    ;; set gui only once
+    if (!ContextMenu_OK)
+    {
+      Menu, Context_, Add, ClearCase Explorer, ShowExplorerMenu
+      Menu, Context_, Add, ; separator
+      Menu, Context_, Add, Find Checkouts, ShowFindCheckoutMenu
+      Menu, Context_, Add, ; separator
+      Menu, Context_, Add, Check Out..., ShowCheckOutMenu
+      Menu, Context_, Add, Check In..., ShowCheckInMenu
+      Menu, Context_, Add, Undo Checkout..., ShowUnCheckOutMenu
+      Menu, Context_, Add, Add to Source Control..., ShowAddToSourceControlMenu
+      Menu, Context_, Add, ; separator
+      Menu, Context_, Add, History, ShowHistoryMenu
+      Menu, Context_, Add, Version Tree, ShowTreeVersionMenu
+      Menu, Context_, Add, Compare with Previous Version, ShowComparePrevMenu
+      Menu, Context_, Add, ; separator
+      Menu, Context_, Add, Properties of Version, ShowVersionPropertiesMenu
+      Menu, Context_, Add, Properties of Element, ShowElementPropertiesMenu
+      Menu, Context_, Add, ; separator
+      Menu, Context_, Add, Edit Config Spec, EditConfigSpecMenu
+
+      ContextMenu_OK := true
+    }
+
+    Menu, Context_, Show
+  }
 }
 Return
 
+;
+;;
+;;; INTERNAL FUNCTIONS
+;===============================================================================
+;===============================================================================
+;
+;;
+;;; EXPLORER
+;===============================================================================
 ;;
 ;;; get the selected file
 GetExplorerFilePath(WindowName)
 {
-  SetTitleMatchMode, Regex
   ControlGetText myCurrentPath, Edit1, %WindowName%
   file := GetExplorerSelectedFile(WindowName)
   file := myCurrentPath . "\" . file
-  SetTitleMatchMode, 1
 
   Return file
 }
@@ -294,79 +395,6 @@ GetExplorerSelectedFile(WindowName)
 ;;; HISTORY BROWSER
 ;===============================================================================
 ;;
-;;; sub function to call function (needed to not define global variable)
-CheckShortcutHistory:
-  CheckShortcutHistoryFunction()
-Return
-;;
-;;; check shortcut after prefix and run associated function
-CheckShortcutHistoryFunction()
-{
-  global CheckOutShortcut, CheckInShortcut, UnCheckOutShortcut, HistoryShortcut, ComparePrevShortcut
-  global TreeVersionShortcut, ExplorerShortcut, FindCheckoutShortcut, ElementPropertiesShortcut
-  global VersionPropertiesShortcut, ClearCaseHistoryTitle
-
-  ;; capture next key
-  Input, MyKey, L1 T2, {Escape}
-  ;; when timeout quit
-  if ErrorLevel = Timeout
-    return
-  ;; when CheckOutShortcut -> Checkout
-  if MyKey = %CheckOutShortcut%
-  {
-    file := GetHistoryFile()
-    CCCheckout(file)
-  }
-  ;; when CheckInShortcut -> Checkin
-  else if MyKey = %CheckInShortcut%
-  {
-    file := GetHistoryFile()
-    CCCheckin(file)
-  }
-  ;; when UnCheckOutShortcut -> Uncheckout
-  else if MyKey = %UnCheckOutShortcut%
-  {
-    file := GetHistoryFile()
-    CCUncheckout(file)
-  }
-  ;; when HistoryShortcut -> History
-  else if MyKey = %HistoryShortcut%
-  {
-    file := GetHistoryFile()
-    CCHistory(file)
-  }
-  ;; when ComparePrevShortcut -> Diff
-  else if MyKey = %ComparePrevShortcut%
-    WinMenuSelectItem, %ClearCaseHistoryTitle%, , Tools, Compare with Previous Version
-  ;; when TreeVersionShortcut -> Tree Version
-  else if MyKey = %TreeVersionShortcut%
-    WinMenuSelectItem, %ClearCaseHistoryTitle%, , Tools, Version Tree
-  ;; when ExplorerShortcut -> ClearCase Explorer
-  else if MyKey = %ExplorerShortcut%
-  {
-    dir := GetHistoryDir()
-    CCExplorer(dir)
-  }
-  ;; when FindCheckoutShortcut -> Find Checkout
-  else if MyKey = %FindCheckoutShortcut%
-  {
-    dir := GetHistoryDir()
-    CCFindCheckout(dir)
-  }
-  ;; when ElementPropertiesShortcut -> Element Properties
-  else if MyKey = %ElementPropertiesShortcut%
-  {
-    file := GetHistoryFile()
-    CCElementProperties(file)
-  }
-  ;; when VersionPropertiesShortcut -> Version Properties
-  else if MyKey = %VersionPropertiesShortcut%
-    WinMenuSelectItem, %ClearCaseHistoryTitle%, , Tools, Properties
-  ;; other characters are not considered
-}
-Return
-
-;;
 ;;; get the file from history browser
 GetHistoryFile()
 {
@@ -394,70 +422,6 @@ GetHistoryDir()
 ;;
 ;;; FIND CHECKOUT
 ;===============================================================================
-;;
-;;; sub function to call function (needed to not define global variable)
-CheckShortcutFindCheckout:
-  CheckShortcutFindCheckoutFunction()
-Return
-;;
-;;; after main shortcut check second bind during 2s and run functions
-CheckShortcutFindCheckoutFunction()
-{
-  global CheckOutShortcut, CheckInShortcut, UnCheckOutShortcut, HistoryShortcut, ComparePrevShortcut
-  global TreeVersionShortcut, ExplorerShortcut, FindCheckoutShortcut, ElementPropertiesShortcut
-  global VersionPropertiesShortcut, ClearCaseFindCheckoutTitle
-
-  ;; capture next key (T2 = timeout 2s, L1 = one character)
-  Input, MyKey, L1 T2, {Escape}
-  ;; when timeout quit
-  if ErrorLevel = Timeout
-    return
-  ;; when CheckOutShortcut -> Checkout
-  if MyKey = %CheckOutShortcut%
-  {
-    file := GetFinCheckoutsSelectedFile()
-    CCCheckout(file)
-  }
-  ;; when CheckInShortcut -> Checkin
-  else if MyKey = %CheckInShortcut%
-    WinMenuSelectItem, %ClearCaseFindCheckoutTitle%, , Tools, Check In...
-  ;; when UnCheckOutShortcut -> Uncheckout
-  else if MyKey = %UnCheckOutShortcut%
-    WinMenuSelectItem, %ClearCaseFindCheckoutTitle%, , Tools, Undo Checkout...
-  ;; when HistoryShortcut -> History
-  else if MyKey = %HistoryShortcut%
-    WinMenuSelectItem, %ClearCaseFindCheckoutTitle%, , Tools, History
-  ;; when ComparePrevShortcut -> Diff
-  else if MyKey = %ComparePrevShortcut%
-    WinMenuSelectItem, %ClearCaseFindCheckoutTitle%, , Tools, Compare with Previous Version
-  ;; when TreeVersionShortcut -> Tree Version
-  else if MyKey = %TreeVersionShortcut%
-    WinMenuSelectItem, %ClearCaseFindCheckoutTitle%, , Tools, Version Tree
-  ;; when ExplorerShortcut -> ClearCase Explorer
-  else if MyKey = %ExplorerShortcut%
-  {
-    dir := GetFindCheckoutsDir()
-    CCExplorer(dir)
-  }
-  ;; when FindCheckoutShortcut -> Find Checkout
-  else if MyKey = %FindCheckoutShortcut%
-  {
-    dir := GetFindCheckoutsDir()
-    CCFindCheckout(dir)
-  }
-  ;; when ElementPropertiesShortcut -> Element Properties
-  else if MyKey = %ElementPropertiesShortcut%
-  {
-    file := GetFinCheckoutsSelectedFile()
-    CCElementProperties(file)
-  }
-  ;; when VersionPropertiesShortcut -> Version Properties
-  else if MyKey = %VersionPropertiesShortcut%
-    WinMenuSelectItem, %ClearCaseFindCheckoutTitle%, , Tools, Properties
-  ;; other characters are not considered
-}
-Return
-
 ;;
 ;;; get the selected file path (surprising it's the same list than MS Explorer)
 GetFinCheckoutsSelectedFile()
@@ -503,104 +467,6 @@ GetFindCheckoutsDir()
 ;;
 ;;; CLEARCASE EXPLORER
 ;===============================================================================
-;;
-;;; sub function to call function (needed to not define global variable)
-CheckShortcutClearCaseExplorer:
-  CheckShortcutClearCaseExplorerFunction()
-Return
-;;
-;;; after main shortcut check second bind during 2s and run functions
-CheckShortcutClearCaseExplorerFunction()
-{
-  global CheckOutShortcut, CheckInShortcut, UnCheckOutShortcut, HistoryShortcut, ComparePrevShortcut
-  global TreeVersionShortcut, ExplorerShortcut, FindCheckoutShortcut, ElementPropertiesShortcut
-  global VersionPropertiesShortcut, ClearCaseExplorerTitle
-
-  ;; capture next key
-  Input, MyKey, L1 T2, {Escape}
-  ;; when timeout quit
-  if ErrorLevel = Timeout
-    return
-  ;; when CheckOutShortcut -> Checkout
-  if MyKey = %CheckOutShortcut%
-  {
-    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
-    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
-    ;; with 0x8004 wParam and 0 lParam (checkout in menu)
-    PostMessage, 0x111, 32772, 0, , %ClearCaseExplorerTitle%
-  }
-  ;; when CheckInShortcut -> Checkin
-  else if MyKey = %CheckInShortcut%
-  {
-    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
-    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
-    ;; with 0x8005 wParam and 0 lParam (checkin in menu)
-    PostMessage, 0x111, 32773, 0, , %ClearCaseExplorerTitle%
-  }
-  ;; when UnCheckOutShortcut -> Uncheckout
-  else if MyKey = %UnCheckOutShortcut%
-  {
-    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
-    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
-    ;; with 0x8011 wParam and 0 lParam (undo checkout in menu)
-    PostMessage, 0x111, 32785, 0, , %ClearCaseExplorerTitle%
-  }
-  ;; when HistoryShortcut -> History
-  else if MyKey = %HistoryShortcut%
-  {
-    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
-    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
-    ;; with 0x8017 wParam and 0 lParam (history in menu)
-    PostMessage, 0x111, 32791, 0, , %ClearCaseExplorerTitle%
-  }
-  ;; when ComparePrevShortcut -> Diff
-  else if MyKey = %ComparePrevShortcut%
-  {
-    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
-    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
-    ;; with 0x8012 wParam and 0 lParam (compare with previous in menu)
-    PostMessage, 0x111, 32786, 0, , %ClearCaseExplorerTitle%
-  }
-  ;; when TreeVersionShortcut -> Tree Version
-  else if MyKey = %TreeVersionShortcut%
-  {
-    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
-    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
-    ;; with 0x8013 wParam and 0 lParam (version tree in menu)
-    PostMessage, 0x111, 32787, 0, , %ClearCaseExplorerTitle%
-  }
-  ;; when ExplorerShortcut -> ClearCase Explorer
-  else if MyKey = %ExplorerShortcut%
-  {
-    dir := GetClearCaseExplorerDir()
-    CCExplorer(dir)
-  }
-  ;; when FindCheckoutShortcut -> Find Checkout
-  else if MyKey = %FindCheckoutShortcut%
-  {
-    dir := GetClearCaseExplorerDir()
-    CCFindCheckout(dir)
-  }
-  ;; when ElementPropertiesShortcut -> Element Properties
-  else if MyKey = %ElementPropertiesShortcut%
-  {
-    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
-    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
-    ;; with 0x8070 wParam and 0 lParam (element properties in menu)
-    PostMessage, 0x111, 32880, 0, , %ClearCaseExplorerTitle%
-  }
-  ;; when VersionPropertiesShortcut -> Version Properties
-  else if MyKey = %VersionPropertiesShortcut%
-  {
-    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
-    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
-    ;; with 0x8071 wParam and 0 lParam (version properties in menu)
-    PostMessage, 0x111, 32881, 0, , %ClearCaseExplorerTitle%
-  }
-  ;; other characters are not considered
-}
-Return
-
 ;;
 ;;; get the dir from find checkouts
 GetClearCaseExplorerDir()
@@ -657,163 +523,29 @@ GetClearCaseExplorerSelectedFile()
 
 ;
 ;;
-;;; TREE VERSION
-;===============================================================================
-;;
-;;; sub function to call function (needed to not define global variable)
-CheckShortcutTreeVersion:
-  CheckShortcutTreeVersionFunction()
-Return
-;;
-;;; check shortcut after prefix and run associated function
-CheckShortcutTreeVersionFunction()
-{
-  global CheckOutShortcut, CheckInShortcut, UnCheckOutShortcut, HistoryShortcut, ComparePrevShortcut
-  global TreeVersionShortcut, ExplorerShortcut, FindCheckoutShortcut, ElementPropertiesShortcut
-  global VersionPropertiesShortcut, ClearCaseTreeVersionTitle, SoftwareName
-
-  ;; capture next key
-  Input, MyKey, L1 T2, {Escape}
-  ;; when timeout quit
-  if ErrorLevel = Timeout
-    return
-  ;; when CheckOutShortcut -> Checkout
-  if MyKey = %CheckOutShortcut%
-    WinMenuSelectItem, %ClearCaseTreeVersionTitle%, , Tools, Check Out...
-  ;; when CheckInShortcut -> Checkin
-  else if MyKey = %CheckInShortcut%
-    WinMenuSelectItem, %ClearCaseTreeVersionTitle%, , Tools, Check In...
-  ;; when UnCheckOutShortcut -> Uncheckout
-  else if MyKey = %UnCheckOutShortcut%
-    WinMenuSelectItem, %ClearCaseTreeVersionTitle%, , Tools, Undo Checkout...
-  ;; when HistoryShortcut -> History
-  else if MyKey = %HistoryShortcut%
-    WinMenuSelectItem, %ClearCaseTreeVersionTitle%, , Tools, History
-  ;; when ComparePrevShortcut -> Diff
-  else if MyKey = %ComparePrevShortcut%
-    WinMenuSelectItem, %ClearCaseTreeVersionTitle%, , Tools, Compare, with Previous Version
-  ;; when TreeVersionShortcut -> Tree Version
-  else if MyKey = %TreeVersionShortcut%
-     Send {F5}
-  ;; when ExplorerShortcut -> ClearCase Explorer
-  else if MyKey = %ExplorerShortcut%
-  {
-    MsgBox, 0x10, %SoftwareName%, Cannot open ClearCase Explorer from Tree Version.
-  }
-  ;; when FindCheckoutShortcut -> Find Checkout
-  else if MyKey = %FindCheckoutShortcut%
-  {
-    MsgBox, 0x10, %SoftwareName%, Cannot open ClearCase Find Checkout from Tree Version.
-  }
-  ;; when ElementPropertiesShortcut -> Element Properties
-  else if MyKey = %ElementPropertiesShortcut%
-  {
-    MsgBox, 0x10, %SoftwareName%, Cannot open ClearCase Element Properties from Tree Version.
-  }
-  ;; when VersionPropertiesShortcut -> Version Properties
-  else if MyKey = %VersionPropertiesShortcut%
-    WinMenuSelectItem, %ClearCaseTreeVersionTitle%, , Tools, Properties
-  ;; other characters are not considered
-}
-Return
-
-;
-;;
 ;;; ULTRAEDIT
 ;===============================================================================
-;;
-;;; sub function to call function (needed to not define global variable)
-CheckShortcutUltraEdit:
-  CheckShortcutUltraEditFunction()
-Return
-;;
-;;; check shortcut after prefix and run associated function
-CheckShortcutUltraEditFunction()
-{
-  global CheckOutShortcut, CheckInShortcut, UnCheckOutShortcut, HistoryShortcut, ComparePrevShortcut
-  global TreeVersionShortcut, ExplorerShortcut, FindCheckoutShortcut, ElementPropertiesShortcut
-  global VersionPropertiesShortcut, UltraEditTitle
-
-  ;; capture next key
-  Input, MyKey, L1 T2, {Escape}
-  ;; when timeout quit
-  if ErrorLevel = Timeout
-    return
-  ;; when CheckOutShortcut -> Checkout
-  if MyKey = %CheckOutShortcut%
-  {
-    file := GetUltraEditFile()
-    CCCheckout(file)
-  }
-  ;; when CheckInShortcut -> Checkin
-  else if MyKey = %CheckInShortcut%
-  {
-    file := GetUltraEditFile()
-    CCCheckin(file)
-  }
-  ;; when UnCheckOutShortcut -> Uncheckout
-  else if MyKey = %UnCheckOutShortcut%
-  {
-    file := GetUltraEditFile()
-    CCUncheckout(file)
-  }
-  ;; when HistoryShortcut -> History
-  else if MyKey = %HistoryShortcut%
-  {
-    file := GetUltraEditFile()
-    CCHistory(file)
-  }
-  ;; when ComparePrevShortcut -> Diff
-  else if MyKey = %ComparePrevShortcut%
-  {
-    file := GetUltraEditFile()
-    CCDiff(file)
-  }
-  ;; when TreeVersionShortcut -> Tree Version
-  else if MyKey = %TreeVersionShortcut%
-  {
-    file := GetUltraEditFile()
-    CCTreeVersion(file)
-  }
-  ;; when ExplorerShortcut -> ClearCase Explorer
-  else if MyKey = %ExplorerShortcut%
-  {
-    dir := GetUltraEditDir()
-    CCExplorer(dir)
-  }
-  ;; when FindCheckoutShortcut -> Find Checkout
-  else if MyKey = %FindCheckoutShortcut%
-  {
-    dir := GetUltraEditDir()
-    CCFindCheckout(dir)
-  }
-  ;; when ElementPropertiesShortcut -> Element Properties
-  else if MyKey = %ElementPropertiesShortcut%
-  {
-    file := GetUltraEditFile()
-    CCElementProperties(file)
-  }
-  ;; when VersionPropertiesShortcut -> Version Properties
-  else if MyKey = %VersionPropertiesShortcut%
-  {
-    file := GetUltraEditFile()
-    CCVersionProperties(file)
-  }
-  ;; other characters are not considered
-}
-Return
-
 ;;
 ;;; get the file from history browser
 GetUltraEditFile()
 {
   global UltraEditTitle
 
-  WinTitle := RegExReplace(UltraEditTitle, "(.*) ahk_exe.*", "$1")
-
   WinGetTitle, myTitle, %UltraEditTitle%
-  StringReplace, filePath, myTitle, %WinTitle%
+  ;; get position of [
+  StringGetPos, pos, myTitle, [
+  ;; string get pos start with 0 so +1 to have number of character to trim
+  pos += 1
+  ;; remove all left [
+  StringTrimLeft, filePath, myTitle, pos
+  ;; remove ]
   StringTrimRight, filePath, filePath, 1
+  ;; if file need to be save
+  if RegexMatch(filePath, "\*$")
+  {
+    ;; remove *
+    StringTrimRight, filePath, filePath, 1
+  }
 
   Return filePath
 }
@@ -827,86 +559,6 @@ GetUltraEditDir()
 
   Return dirPath
 }
-
-;
-;;
-;;; EMACS
-;===============================================================================
-;;
-;;; sub function to call function (needed to not define global variable)
-CheckShortcutEmacs:
-  CheckShortcutEmacsFunction()
-Return
-;;
-;;; check shortcut after prefix and run associated function
-CheckShortcutEmacsFunction()
-{
-  global CheckOutShortcut, CheckInShortcut, UnCheckOutShortcut, HistoryShortcut, ComparePrevShortcut
-  global TreeVersionShortcut, ExplorerShortcut, FindCheckoutShortcut, ElementPropertiesShortcut
-  global VersionPropertiesShortcut, EmacsTitle
-
-  ;; capture next key
-  Input, MyKey, L1 T2, {Escape}
-  ;; when timeout quit
-  if ErrorLevel = Timeout
-    return
-  ;; block any input from user
-  BlockInput, On
-  ;; when CheckOutShortcut -> Checkout
-  if MyKey = %CheckOutShortcut%
-  {
-    SendInput, {Alt Down}x{Alt Up}clearcase-gui-checkout{Enter}
-  }
-  ;; when CheckInShortcut -> Checkin
-  else if MyKey = %CheckInShortcut%
-  {
-    SendInput, {Alt Down}x{Alt Up}clearcase-gui-checkin{Enter}
-  }
-  ;; when UnCheckOutShortcut -> Uncheckout
-  else if MyKey = %UnCheckOutShortcut%
-  {
-    SendInput, {Alt Down}x{Alt Up}clearcase-gui-uncheckout{Enter}
-  }
-  ;; when HistoryShortcut -> History
-  else if MyKey = %HistoryShortcut%
-  {
-    SendInput, {Alt Down}x{Alt Up}clearcase-gui-history{Enter}
-  }
-  ;; when ComparePrevShortcut -> Diff
-  else if MyKey = %ComparePrevShortcut%
-  {
-    SendInput, {Alt Down}x{Alt Up}clearcase-gui-diff-prev{Enter}
-  }
-  ;; when TreeVersionShortcut -> Tree Version
-  else if MyKey = %TreeVersionShortcut%
-  {
-    SendInput, {Alt Down}x{Alt Up}clearcase-gui-version-tree{Enter}
-  }
-  ;; when ExplorerShortcut -> ClearCase Explorer
-  else if MyKey = %ExplorerShortcut%
-  {
-    SendInput, {Alt Down}x{Alt Up}clearcase-gui-explorer{Enter}
-  }
-  ;; when FindCheckoutShortcut -> Find Checkout
-  else if MyKey = %FindCheckoutShortcut%
-  {
-    SendInput, {Alt Down}x{Alt Up}clearcase-gui-find-checkout{Enter}
-  }
-  ;; when ElementPropertiesShortcut -> Element Properties
-  else if MyKey = %ElementPropertiesShortcut%
-  {
-    SendInput, {Alt Down}x{Alt Up}clearcase-gui-properties{Enter}
-  }
-  ;; when VersionPropertiesShortcut -> Version Properties
-  else if MyKey = %VersionPropertiesShortcut%
-  {
-    SendInput, {Alt Down}x{Alt Up}clearcase-gui-version-properties{Enter}
-  }
-  ;; other characters are not considered
-  ;; unblock any input from user
-  BlockInput, Off
-}
-Return
 
 ;
 ;;
@@ -1017,13 +669,633 @@ Return
 
 ;
 ;;
-;;; FUNCTIONS
+;;; COMPUTE
+;===============================================================================
+;;
+;;; handler for contextual menu
+ShowCheckOutMenu:
+{
+  ;; ContextMenuWindowName set by ContextMenu handler
+  ShowCheckOut(ContextMenuWindowName)
+}
+Return
+;;
+;;; Call CheckOut
+ShowCheckOut(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle
+
+  if WindowName = %ExplorerTitle%
+  {
+    file := GetExplorerFilePath(WindowName)
+    CCCheckout(file)
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+    file := GetFinCheckoutsSelectedFile()
+    CCCheckout(file)
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    file := GetHistoryFile()
+    CCCheckout(file)
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
+    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
+    ;; with 0x8004 wParam and 0 lParam (checkout in menu)
+    PostMessage, 0x111, 32772, 0, , %ClearCaseExplorerTitle%
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+    WinMenuSelectItem, %ClearCaseTreeVersionTitle%, , Tools, Check Out...
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+    file := GetUltraEditFile()
+    CCCheckout(file)
+  }
+}
+Return
+
+;;
+;;; handler for contextual menu
+ShowCheckInMenu:
+{
+  ;; ContextMenuWindowName set by ContextMenu handler
+  ShowCheckIn(ContextMenuWindowName)
+}
+Return
+;;
+;;; Call CheckIn
+ShowCheckIn(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle
+
+  if WindowName = %ExplorerTitle%
+  {
+    file := GetExplorerFilePath(WindowName)
+    CCCheckin(file)
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+    WinMenuSelectItem, %ClearCaseFindCheckoutTitle%, , Tools, Check In...
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    file := GetHistoryFile()
+    CCCheckin(file)
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
+    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
+    ;; with 0x8005 wParam and 0 lParam (checkin in menu)
+    PostMessage, 0x111, 32773, 0, , %ClearCaseExplorerTitle%
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+    WinMenuSelectItem, %ClearCaseTreeVersionTitle%, , Tools, Check In...
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+    file := GetUltraEditFile()
+    CCCheckin(file)
+  }
+}
+Return
+
+;;
+;;; handler for contextual menu
+ShowUnCheckOutMenu:
+{
+  ;; ContextMenuWindowName set by ContextMenu handler
+  ShowUnCheckOut(ContextMenuWindowName)
+}
+Return
+;;
+;;; Call UnCheckOut
+ShowUnCheckOut(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle
+
+  if WindowName = %ExplorerTitle%
+  {
+    file := GetExplorerFilePath(WindowName)
+    CCUncheckout(file)
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+    WinMenuSelectItem, %ClearCaseFindCheckoutTitle%, , Tools, Undo Checkout...
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    file := GetHistoryFile()
+    CCUncheckout(file)
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
+    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
+    ;; with 0x8011 wParam and 0 lParam (undo checkout in menu)
+    PostMessage, 0x111, 32785, 0, , %ClearCaseExplorerTitle%
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+    WinMenuSelectItem, %ClearCaseTreeVersionTitle%, , Tools, Undo Checkout...
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+    file := GetUltraEditFile()
+    CCUncheckout(file)
+  }
+}
+Return
+
+;;
+;;; handler for contextual menu
+ShowHistoryMenu:
+{
+  ;; ContextMenuWindowName set by ContextMenu handler
+  ShowHistory(ContextMenuWindowName)
+}
+Return
+;;
+;;; Call History
+ShowHistory(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle
+
+  if WindowName = %ExplorerTitle%
+  {
+    file := GetExplorerFilePath(WindowName)
+    CCHistory(file)
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+    WinMenuSelectItem, %ClearCaseFindCheckoutTitle%, , Tools, History
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    file := GetHistoryFile()
+    CCHistory(file)
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
+    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
+    ;; with 0x8017 wParam and 0 lParam (history in menu)
+    PostMessage, 0x111, 32791, 0, , %ClearCaseExplorerTitle%
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+    WinMenuSelectItem, %ClearCaseTreeVersionTitle%, , Tools, History
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+    file := GetUltraEditFile()
+    CCHistory(file)
+  }
+}
+Return
+
+;;
+;;; handler for contextual menu
+ShowComparePrevMenu:
+{
+  ;; ContextMenuWindowName set by ContextMenu handler
+  ShowComparePrev(ContextMenuWindowName)
+}
+Return
+;;
+;;; Call ComparePrev
+ShowComparePrev(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle
+
+  if WindowName = %ExplorerTitle%
+  {
+    file := GetExplorerFilePath(WindowName)
+    CCDiff(file)
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+    WinMenuSelectItem, %ClearCaseFindCheckoutTitle%, , Tools, Compare with Previous Version
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    WinMenuSelectItem, %ClearCaseHistoryTitle%, , Tools, Compare with Previous Version
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
+    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
+    ;; with 0x8012 wParam and 0 lParam (compare with previous in menu)
+    PostMessage, 0x111, 32786, 0, , %ClearCaseExplorerTitle%
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+    WinMenuSelectItem, %ClearCaseTreeVersionTitle%, , Tools, Compare, with Previous Version
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+    file := GetUltraEditFile()
+    CCDiff(file)
+  }
+}
+Return
+
+;;
+;;; handler for contextual menu
+ShowTreeVersionMenu:
+{
+  ;; ContextMenuWindowName set by ContextMenu handler
+  ShowTreeVersion(ContextMenuWindowName)
+}
+Return
+;;
+;;; Call Tree Version
+ShowTreeVersion(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle
+
+  if WindowName = %ExplorerTitle%
+  {
+    file := GetExplorerFilePath(WindowName)
+    CCTreeVersion(file)
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+    WinMenuSelectItem, %ClearCaseFindCheckoutTitle%, , Tools, Version Tree
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    WinMenuSelectItem, %ClearCaseHistoryTitle%, , Tools, Version Tree
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
+    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
+    ;; with 0x8013 wParam and 0 lParam (version tree in menu)
+    PostMessage, 0x111, 32787, 0, , %ClearCaseExplorerTitle%
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+    ;; do only a refresh
+    Send {F5}
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+    file := GetUltraEditFile()
+    CCTreeVersion(file)
+  }
+}
+Return
+
+;;
+;;; handler for contextual menu
+ShowExplorerMenu:
+{
+  ;; ContextMenuWindowName set by ContextMenu handler
+  ShowExplorer(ContextMenuWindowName)
+}
+Return
+;;
+;;; Call ClearCase Explorer
+ShowExplorer(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global SoftwareName
+
+  if WindowName = %ExplorerTitle%
+  {
+    dir := GetExplorerDirPath(WindowName)
+    CCExplorer(dir)
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+    dir := GetFindCheckoutsDir()
+    CCExplorer(dir)
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    dir := GetHistoryDir()
+    CCExplorer(dir)
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+    dir := GetClearCaseExplorerDir()
+    CCExplorer(dir)
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+    MsgBox, 0x10, %SoftwareName%, Cannot open ClearCase Explorer from Tree Version.
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+    dir := GetUltraEditDir()
+    CCExplorer(dir)
+  }
+}
+Return
+
+;;
+;;; handler for contextual menu
+ShowFindCheckoutMenu:
+{
+  ;; ContextMenuWindowName set by ContextMenu handler
+  ShowFindCheckout(ContextMenuWindowName)
+}
+Return
+;;
+;;; Call Find Checkouts
+ShowFindCheckout(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global SoftwareName
+
+  if WindowName = %ExplorerTitle%
+  {
+    dir := GetExplorerDirPath(WindowName)
+    CCFindCheckout(dir)
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+    dir := GetFindCheckoutsDir()
+    CCFindCheckout(dir)
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    dir := GetHistoryDir()
+    CCFindCheckout(dir)
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+    dir := GetClearCaseExplorerDir()
+    CCFindCheckout(dir)
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+    MsgBox, 0x10, %SoftwareName%, Cannot open ClearCase Find Checkout from Tree Version.
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+    dir := GetUltraEditDir()
+    CCFindCheckout(dir)
+  }
+}
+Return
+
+;;
+;;; handler for contextual menu
+ShowElementPropertiesMenu:
+{
+  ;; ContextMenuWindowName set by ContextMenu handler
+  ShowElementProperties(ContextMenuWindowName)
+}
+Return
+;;
+;;; Call Element properties
+ShowElementProperties(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global SoftwareName
+
+  if WindowName = %ExplorerTitle%
+  {
+    file := GetExplorerFilePath(WindowName)
+    CCElementProperties(file)
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+    file := GetFinCheckoutsSelectedFile()
+    CCElementProperties(file)
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    file := GetHistoryFile()
+    CCElementProperties(file)
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
+    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
+    ;; with 0x8070 wParam and 0 lParam (element properties in menu)
+    PostMessage, 0x111, 32880, 0, , %ClearCaseExplorerTitle%
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+    MsgBox, 0x10, %SoftwareName%, Cannot open ClearCase Element Properties from Tree Version.
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+    file := GetUltraEditFile()
+    CCElementProperties(file)
+  }
+}
+Return
+
+;;
+;;; handler for contextual menu
+ShowVersionPropertiesMenu:
+{
+  ;; ContextMenuWindowName set by ContextMenu handler
+  ShowVersionProperties(ContextMenuWindowName)
+}
+Return
+;;
+;;; Call Version properties
+ShowVersionProperties(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle
+
+  if WindowName = %ExplorerTitle%
+  {
+    file := GetExplorerFilePath(WindowName)
+    CCVersionProperties(file)
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+    WinMenuSelectItem, %ClearCaseFindCheckoutTitle%, , Tools, Properties
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    WinMenuSelectItem, %ClearCaseHistoryTitle%, , Tools, Properties
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
+    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
+    ;; with 0x8071 wParam and 0 lParam (version properties in menu)
+    PostMessage, 0x111, 32881, 0, , %ClearCaseExplorerTitle%
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+    WinMenuSelectItem, %ClearCaseTreeVersionTitle%, , Tools, Properties
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+    file := GetUltraEditFile()
+    CCVersionProperties(file)
+  }
+}
+Return
+
+;;
+;;; handler for contextual menu
+ShowAddToSourceControlMenu:
+{
+  ;; ContextMenuWindowName set by ContextMenu handler
+  ShowAddToSourceControl(ContextMenuWindowName)
+}
+Return
+;;
+;;; Call Add to source control
+ShowAddToSourceControl(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global SoftwareName
+
+  if WindowName = %ExplorerTitle%
+  {
+    file := GetExplorerFilePath(WindowName)
+    CCAddToSourceControl(file)
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+    MsgBox, 0x10, %SoftwareName%, Cannot add to source control a checkout file.
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    MsgBox, 0x10, %SoftwareName%, Cannot add to source control a file with an history.
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
+    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
+    ;; with 0x800E wParam and 0 lParam (add to source control in menu)
+    PostMessage, 0x111, 32782, 0, , %ClearCaseExplorerTitle%
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+    MsgBox, 0x10, %SoftwareName%, Cannot add to source control a file with version.
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+    file := GetUltraEditFile()
+    CCAddToSourceControl(file)
+  }
+}
+Return
+
+;;
+;;; handler for edit config spec contextual menu
+EditConfigSpecMenu:
+{
+  ;; get path of current directory
+  EditConfigSpecDirPath := GetDirectoryPath(ContextMenuWindowName)
+  ;; edit and apply config-spec
+  CCEditConfigSpec(EditConfigSpecDirPath)
+}
+
+;;
+;;; Get active window identifier
+GetActiveWindowName()
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle
+
+  ;; detect active window
+  ifWinActive, %ExplorerTitle%
+  {
+    WindowName = %ExplorerTitle%
+  }
+  else ifWinActive, %ClearCaseFindCheckoutTitle%
+  {
+    WindowName = %ClearCaseFindCheckoutTitle%
+  }
+  else ifWinActive, %ClearCaseHistoryTitle%
+  {
+    WindowName = %ClearCaseHistoryTitle%
+  }
+  else ifWinActive, %ClearCaseExplorerTitle%
+  {
+    WindowName = %ClearCaseExplorerTitle%
+  }
+  else ifWinActive, %ClearCaseTreeVersionTitle%
+  {
+    WindowName = %ClearCaseTreeVersionTitle%
+  }
+  else ifWinActive, %UltraEditTitle%
+  {
+    WindowName = %UltraEditTitle%
+  }
+  else
+  {
+    WindowName = ""
+  }
+
+  Return WindowName
+}
+
+;;
+;;; Get directory path of current path
+GetDirectoryPath(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global SoftwareName
+
+  if WindowName = %ExplorerTitle%
+  {
+    dirPath := GetExplorerDirPath(WindowName)
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+    dirPath := GetFindCheckoutsDir()
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    dirPath := GetHistoryDir()
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+    dirPath := GetClearCaseExplorerDir()
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+    MsgBox, 0x10, %SoftwareName%, Cannot edit config-spec from Tree Version.
+    dirPath := ""
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+    dirPath := GetUltraEditDir()
+  }
+
+  Return dirPath
+}
+
+;
+;;
+;;; CLEARCASE
 ;===============================================================================
 ;;
 ;;; show checkout window about selected file
 CCCheckout(filePath)
 {
-  if filePath != ""
+  if StrLen(filePath)
   {
     Run, cleardlg.exe /window 5061e /windowmsg A065 /checkout "%filePath%"
   }
@@ -1034,7 +1306,7 @@ Return
 ;;; show checkin window about selected file
 CCCheckin(filePath)
 {
-  if filePath != ""
+  if StrLen(filePath)
   {
     Run, cleardlg.exe /window 606f6 /windowmsg A065 /checkin "%filePath%"
   }
@@ -1045,7 +1317,7 @@ Return
 ;;; show uncheckout window about selected file
 CCUncheckout(filePath)
 {
-  if filePath != ""
+  if StrLen(filePath)
   {
     Run, cleardlg.exe /window c04ca /windowmsg A065 /uncheckout "%filePath%"
   }
@@ -1056,7 +1328,7 @@ Return
 ;;; show history about selected file
 CCHistory(filePath)
 {
-  if filePath != ""
+  if StrLen(filePath)
   {
     Run, clearhistory.exe "%filePath%"
   }
@@ -1067,7 +1339,7 @@ Return
 ;;; show diff with previous file about selected file
 CCDiff(filePath)
 {
-  if filePath != ""
+  if StrLen(filePath)
   {
     Run, cleartool.exe diff -graphical -predecessor "%filePath%"
   }
@@ -1078,7 +1350,7 @@ Return
 ;;; show tree version about selected file
 CCTreeVersion(filePath)
 {
-  if filePath != ""
+  if StrLen(filePath)
   {
     Run, clearvtree.exe "%filePath%"
   }
@@ -1089,7 +1361,7 @@ Return
 ;;; show explorer about selected file
 CCExplorer(dirPath)
 {
-  if dirPath != ""
+  if StrLen(dirPath)
   {
     Run, clearexplorer.exe "%dirPath%"
   }
@@ -1100,7 +1372,7 @@ Return
 ;;; show find checkout about selected file
 CCFindCheckout(dirPath)
 {
-  if dirPath != ""
+  if StrLen(dirPath)
   {
     Run, clearfindco.exe "%dirPath%"
   }
@@ -1111,7 +1383,7 @@ Return
 ;;; show element properties about selected file
 CCElementProperties(filePath)
 {
-  if filePath != ""
+  if StrLen(filePath)
   {
     Run, cleardescribe.exe "%filePath%@@"
   }
@@ -1122,16 +1394,97 @@ Return
 ;;; show version properties about selected file
 CCVersionProperties(filePath)
 {
-  if filePath != ""
+  if StrLen(filePath)
   {
     Run, cleardescribe.exe "%filePath%"
   }
 }
 Return
 
+;;
+;;; show version properties about selected file
+CCAddToSourceControl(filePath)
+{
+  if StrLen(filePath)
+  {
+    Run, cleardlg.exe /window 30324 /windowmsg A065 /addtosrc "%filePath%"
+  }
+}
+Return
+
+;;
+;;; get config-spec and edit it
+CCEditConfigSpec(dirPath)
+{
+  global ConfigSpecEditorCommand, ConfigSpecFileName, SoftwareName
+
+  if StrLen(dirPath)
+  {
+    ;; set absolute file path
+    fileName = % dirPath . "\" . ConfigSpecFileName
+
+    ;; get config spec
+    RunWait, %comspec% /c "cd %dirPath% && cleartool.exe catcs > %ConfigSpecFileName%", %dirPath%
+
+    ;; launch default editor
+    Run, %fileName%, %dirPath%, UseErrorLevel, editorPID
+    if ErrorLevel = ERROR
+    {
+       Run, notepad %ConfigSpecFileName%, %dirPath%, UseErrorLevel, editorPID
+       if ErrorLevel = ERROR
+       {
+         FileDelete, %fileName%
+         MsgBox, 0x10, %SoftwareName%, notepad not found.
+         Return
+       }
+    }
+    ;; can detect hidden window
+    DetectHiddenWindows, On
+    ;; wait editor
+    WinWait, ahk_pid %editorPID%
+
+    ;; init loop
+    ;; get the file time of modification of file (for reference)
+    FileGetTime, CurrentDate, %fileName%, M
+    FileTime = %CurrentDate%
+    ;; while the modification time reference is the same as the current
+    ;; modification time
+    While (FileTime = CurrentDate)
+    {
+      ;; get modification time of temporary file
+      FileGetTime, FileTime, %fileName%, M
+      ;; when editor is not running
+      IfWinNotExist, ahk_pid %editorPID%
+      {
+        ;; display tray tip to indicate of no change of config spec
+        TrayTip, %SoftwareName%, config-spec has not changed., 5, 1
+        break
+      }
+      ;; wait 100ms (pooling)
+      Sleep, 100
+    }
+
+    ;; cannot detect hidden window
+    DetectHiddenWindows, Off
+
+    if (FileTime != CurrentDate)
+    {
+      ;; get config spec
+      RunWait, %comspec% /c "cd %dirPath% && cleartool.exe setcs %ConfigSpecFileName%", %dirPath%
+      ;; display tray tip to indicate setting of config spec
+      TrayTip, %SoftwareName%, setting config-spec done., 5, 1
+    }
+    ;; to be sure it is not used after wait clearcase setcs
+    sleep, 100
+    ;; delete temp file
+    FileDelete, %fileName%
+  }
+}
+Return
+
 ;
 ;;
-;;; MENU + GUI
+;;; TRAY ICON MENU HANDLER
 ;===============================================================================
 ;;
 ;;; handler of the item about
@@ -1151,16 +1504,18 @@ MenuHelp:
   Gui, AboutHelp_:Add, Text, ,
 (
 All these shortcuts are functional in MS Explorer, CC History Browser, CC Find checkout, CC Explorer, CC Tree Version, UltraEdit.
-        %MainKey%   %CheckOutShortcut%`t`tCheckout
-        %MainKey%   %CheckInShortcut%`t`tCheckIn
-        %MainKey%   %UnCheckOutShortcut%`t`tUnCheckOut
-        %MainKey%   %HistoryShortcut%`t`tHistory Browser
-        %MainKey%   %ComparePrevShortcut%`t`tCompare with previous
-        %MainKey%   %TreeVersionShortcut%`t`tTree Version Browser
+        %MainKey%   %CheckOutShortcut%`t`tCheck Out...
+        %MainKey%   %CheckInShortcut%`t`tCheck In...
+        %MainKey%   %UnCheckOutShortcut%`t`tUn Checkout...
+        %MainKey%   %HistoryShortcut%`t`tHistory
+        %MainKey%   %ComparePrevShortcut%`t`tCompare with Previous Version
+        %MainKey%   %TreeVersionShortcut%`t`Version Tree
         %MainKey%   %ExplorerShortcut%`t`tClearCase Explorer `(not working in CC Tree Version`)
         %MainKey%   %FindCheckoutShortcut%`t`tFind Checkouts `(not working in CC Tree Version`)
-        %MainKey%   %ElementPropertiesShortcut%`t`tElement Properties `(not working in CC Tree Version`)
-        %MainKey%   %VersionPropertiesShortcut%`t`tVersion Properties
+        %MainKey%   %ElementPropertiesShortcut%`t`tProperties of Element `(not working in CC Tree Version`)
+        %MainKey%   %VersionPropertiesShortcut%`t`tProperties of Version
+        %MainKey%   %AddToSourceControlShortcut%`t`tAdd to Source Control (only on a View-private file)
+        %MainKey%   %EditConfigSpecShortcut%`t`tEdit Config Spec `(not working in CC Tree Version`)
 )
   Gui, AboutHelp_:Show, AutoSize, Help %SoftwareName%
 Return
@@ -1179,6 +1534,11 @@ MenuReload:
   GoSub, LoadIniFile
 Return
 
+
+;
+;;
+;;; OPTIONS GUI
+;===============================================================================
 ;;
 ;;; handler for the item shortcut
 MenuOptions:
@@ -1203,8 +1563,8 @@ MenuOptions:
   Gui, Options_:Add, Hotkey, ys-4 w155 vKey, %Shortcut%
 
   labelWidth := 110
-  ;; frame with title (w270 = 15 + 110 + 10 + 120 + 15)
-  Gui, Options_:Add, GroupBox, x10 W270 h250, Shortcuts
+  ;; frame with title (w270 = 15 + 110 + 10 + 145 + 15)
+  Gui, Options_:Add, GroupBox, x10 W270 h300, Shortcuts
   ;; label for checkout shortcut
   Gui, Options_:Add, Text, xp+15 yp+19 w%labelWidth% Section, CheckOut:
   ;; add a edit area to enter hotkey for checkout shortcut
@@ -1245,6 +1605,19 @@ MenuOptions:
   Gui, Options_:Add, Text, xs w%labelWidth% Section, Version Properties:
   ;; add a edit area to enter hotkey for version properties shortcut
   Gui, Options_:Add, Hotkey, ys-4 vKeyVersionProperties, %VersionPropertiesShortcut%
+  ;; label for add to source control shortcut
+  Gui, Options_:Add, Text, xs w%labelWidth% Section, Add to Source Control:
+  ;; add a edit area to enter hotkey for add to source control shortcut
+  Gui, Options_:Add, Hotkey, ys-4 vKeyAddToSourceControl, %AddToSourceControlShortcut%
+  ;; label for edit config spec shortcut
+  Gui, Options_:Add, Text, xs w%labelWidth% Section, Edit config-spec:
+  ;; add a edit area to enter hotkey for edit config spec shortcut
+  Gui, Options_:Add, Hotkey, ys-4 vKeyEditConfigSpec, %EditConfigSpecShortcut%
+  ;;
+  ;; frame with title for contextual menu
+  Gui, Options_:Add, GroupBox, x10 W270 h45, Contextual Menu
+  ;; checkbox for contextual menu, checked depends on ContextMenuEnable variable
+  Gui, Options_:Add, CheckBox, xp+15 yp+19 Section Checked%ContextMenuEnable% vContextMenuCheck, Enable contextual menu
   ;;
   ;; add a button "SetShortcuts" will go to the sub SetShortcut ((10 + 270 - 70 - 10 - 70 + 10) / 2 = 60)
   Gui, Options_:Add, Button, x70 w70 Section Default, OK
@@ -1268,97 +1641,93 @@ Options_ButtonOK:
   ;; get the key and the checkbox for window key
   GuiControlGet, Key
   GuiControlGet, WindowKey
+  GuiControlGet, ContextMenuCheck
   ;; remove the gui
   Gui, Destroy
+  ;; enable/disable contextual menu
+  If ContextMenuCheck = 1
+  {
+    Hotkey, IfWinActive, ahk_group GroupWindowTitle
+    ;; enable clearcase shortcut contextual menu
+    Hotkey, $RButton, RightClickButton
+    Hotkey, $RButton Up, RightClickUpButton
+    Hotkey, IfWinActive
+    ContextMenuEnable := 1
+  }
+  else
+  {
+    Hotkey, IfWinActive, ahk_group GroupWindowTitle
+    ;; disable clearcase shortcut contextual menu
+    Hotkey, $RButton, RightClickButton, Off
+    Hotkey, $RButton Up, RightClickUpButton, Off
+    ;; enable key for others
+    Hotkey, $RButton, , On
+    Hotkey, $RButton Up, , On
+    Hotkey, IfWinActive
+    ContextMenuEnable := 0
+  }
   ;; when the checkbox window key is checked
   If WindowKey = 1
   {
     ;; prefix shortcut with #
     Key = % "#" Key
   }
-  ;; unset previous shortcut
-  SetTitleMatchMode, Regex
-  Hotkey, IfWinActive, %ExplorerTitle%
-  HotKey, %MainShortcut%, CheckShortcutExplorer, Off
-  SetTitleMatchMode, 1
-  Hotkey, IfWinActive, %ClearCaseFindCheckoutTitle%
-  Hotkey, %MainShortcut%, CheckShortcutFindCheckout, Off
-  Hotkey, IfWinActive, %ClearCaseHistoryTitle%
-  Hotkey, %MainShortcut%, CheckShortcutHistory, Off
-  Hotkey, IfWinActive, %ClearCaseExplorerTitle%
-  Hotkey, %MainShortcut%, CheckShortcutClearCaseExplorer, Off
-  Hotkey, IfWinActive, %UltraEditTitle%
-  Hotkey, %MainShortcut%, CheckShortcutUltraEdit, Off
-  Hotkey, IfWinActive, %EmacsTitle%
-  Hotkey, %MainShortcut%, CheckShortcutEmacs, Off
+  ;; unset previous shortcut for window
+  Hotkey, IfWinActive, ahk_group GroupWindowTitle
+  HotKey, %MainShortcut%, CheckShortcut, Off
   Hotkey, IfWinActive
   ;; when key already exist
   HotKey, %Key%, , UseErrorLevel
-;;  MsgBox, toto, %ErrorLevel%
   If ErrorLevel = 6
   {
     ;; enable new shortcut
-    SetTitleMatchMode, Regex
-    Hotkey, IfWinActive, %ExplorerTitle%
+    Hotkey, IfWinActive, ahk_group GroupWindowTitle
     HotKey, %Key%, , On
-    SetTitleMatchMode, 1
-    Hotkey, IfWinActive, %ClearCaseFindCheckoutTitle%
-    Hotkey, %Key%, , On
-    Hotkey, IfWinActive, %ClearCaseHistoryTitle%
-    Hotkey, %Key%, , On
-    Hotkey, IfWinActive, %ClearCaseExplorerTitle%
-    Hotkey, %Key%, , On
-    Hotkey, IfWinActive, %UltraEditTitle%
-    Hotkey, %Key%, , On
-    Hotkey, IfWinActive, %EmacsTitle%
-    Hotkey, %Key%, , On
     Hotkey, IfWinActive
   }
-  ;; set new shortcut
-  SetTitleMatchMode, Regex
-  Hotkey, IfWinActive, %ExplorerTitle%
-  HotKey, %Key%, CheckShortcutExplorer1
-  SetTitleMatchMode, 1
-  Hotkey, IfWinActive, %ClearCaseFindCheckoutTitle%
-  Hotkey, %Key%, CheckShortcutFindCheckout
-  Hotkey, IfWinActive, %ClearCaseHistoryTitle%
-  Hotkey, %Key%, CheckShortcutHistory
-  Hotkey, IfWinActive, %ClearCaseExplorerTitle%
-  Hotkey, %Key%, CheckShortcutClearCaseExplorer
-  Hotkey, IfWinActive, %UltraEditTitle%
-  Hotkey, %Key%, CheckShortcutUltraEdit
-  Hotkey, IfWinActive, %EmacsTitle%
-  Hotkey, %Key%, CheckShortcutEmacs
+  ;; set new shortcut for window
+  Hotkey, IfWinActive, ahk_group GroupWindowTitle
+  HotKey, %Key%, CheckShortcut
   Hotkey, IfWinActive
   ;; set new shortcut and write in ini file
   MainShortcut = %Key%
   GoSub, MenuCreateSaveIni
 Return
 
+;
+;;
+;;; INI
+;===============================================================================
 ;;
 ;;; load all setting from ini file if they exist otherwise default value
 LoadIniFile:
   ;; shortcuts
-  IniRead, MainShortcut,              %IniFile%, Shortcut, MainShortcut,              #c
-  IniRead, CheckOutShortcut,          %IniFile%, Shortcut, CheckOutShortcut,          c
-  IniRead, CheckInShortcut,           %IniFile%, Shortcut, CheckInShortcut,           i
-  IniRead, UnCheckOutShortcut,        %IniFile%, Shortcut, UnCheckOutShortcut,        u
-  IniRead, HistoryShortcut,           %IniFile%, Shortcut, HistoryShortcut,           h
-  IniRead, ComparePrevShortcut,       %IniFile%, Shortcut, ComparePrevShortcut,       =
-  IniRead, TreeVersionShortcut,       %IniFile%, Shortcut, TreeVersionShortcut,       t
-  IniRead, ExplorerShortcut,          %IniFile%, Shortcut, ExplorerShortcut,          e
-  IniRead, FindCheckoutShortcut,      %IniFile%, Shortcut, FindCheckoutShortcut,      f
-  IniRead, ElementPropertiesShortcut, %IniFile%, Shortcut, ElementPropertiesShortcut, p
-  IniRead, VersionPropertiesShortcut, %IniFile%, Shortcut, VersionPropertiesShortcut, v
+  IniRead, MainShortcut,               %IniFile%, Shortcut, MainShortcut,               #c
+  IniRead, CheckOutShortcut,           %IniFile%, Shortcut, CheckOutShortcut,           c
+  IniRead, CheckInShortcut,            %IniFile%, Shortcut, CheckInShortcut,            i
+  IniRead, UnCheckOutShortcut,         %IniFile%, Shortcut, UnCheckOutShortcut,         u
+  IniRead, HistoryShortcut,            %IniFile%, Shortcut, HistoryShortcut,            h
+  IniRead, ComparePrevShortcut,        %IniFile%, Shortcut, ComparePrevShortcut,        =
+  IniRead, TreeVersionShortcut,        %IniFile%, Shortcut, TreeVersionShortcut,        t
+  IniRead, ExplorerShortcut,           %IniFile%, Shortcut, ExplorerShortcut,           e
+  IniRead, FindCheckoutShortcut,       %IniFile%, Shortcut, FindCheckoutShortcut,       f
+  IniRead, ElementPropertiesShortcut,  %IniFile%, Shortcut, ElementPropertiesShortcut,  p
+  IniRead, VersionPropertiesShortcut,  %IniFile%, Shortcut, VersionPropertiesShortcut,  v
+  IniRead, AddToSourceControlShortcut, %IniFile%, Shortcut, AddToSourceControlShortcut, a
+  IniRead, EditConfigSpecShortcut,     %IniFile%, Shortcut, EditConfigSpecShortcut,     s
   ;;
   ;; window titles
-  IniRead, ExplorerTitle,              %IniFile%, Title, Explorer1Title, ahk_class CabinetWClass|ExploreWClass
+  IniRead, ExplorerTitle,              %IniFile%, Title, ExplorerTitle, ahk_class CabinetWClass|ExploreWClass
   IniRead, ClearCaseFindCheckoutTitle, %IniFile%, Title, ClearCaseFindCheckoutTitle, Find Checkouts ahk_exe clearfindco.exe
   IniRead, ClearCaseHistoryTitle,      %IniFile%, Title, ClearCaseHistoryTitle, Rational ClearCase History Browser - ahk_exe clearhistory.exe
   IniRead, ClearCaseExplorerTitle,     %IniFile%, Title, ClearCaseExplorerTitle, Rational ClearCase Explorer - ahk_exe clearexplorer.exe
   IniRead, ClearCaseTreeVersionTitle,  %IniFile%, Title, ClearCaseTreeVersionTitle, ahk_exe clearvtree.exe
-  IniRead, UltraEditTitle,             %IniFile%, Title, UltraEditTitle, UltraEdit-32 - [ ahk_exe uedit32.exe
-  IniRead, EmacsTitle,                 %IniFile%, Title, EmacsTitle, ahk_exe emacs.exe
+  IniRead, UltraEditTitle,             %IniFile%, Title, UltraEditTitle, ahk_exe uedit32.exe
+  ;; contextual menu
+  IniRead, ContextMenuTime,   %IniFile%, ContextMenu, ContextMenuTime, 300
+  IniRead, ContextMenuEnable, %IniFile%, ContextMenu, ContextMenuEnable, 1
+  ;; config spec
+  IniRead, ConfigSpecFileName, %IniFile%, ConfigSpec, ConfigSpecFileName, clearcaseshortcut-config-spec.cs
 Return
 
 ;;
@@ -1375,17 +1744,19 @@ Return
 ;;; Save all settings in a ini file
 MenuCreateSaveIni:
   ;; Section Shortcut
-  IniWrite, %MainShortcut%,              %IniFile%, Shortcut, MainShortcut
-  IniWrite, %CheckOutShortcut%,          %IniFile%, Shortcut, CheckOutShortcut
-  IniWrite, %CheckInShortcut%,           %IniFile%, Shortcut, CheckInShortcut
-  IniWrite, %UnCheckOutShortcut%,        %IniFile%, Shortcut, UnCheckOutShortcut
-  IniWrite, %HistoryShortcut%,           %IniFile%, Shortcut, HistoryShortcut
-  IniWrite, %ComparePrevShortcut%,       %IniFile%, Shortcut, ComparePrevShortcut
-  IniWrite, %TreeVersionShortcut%,       %IniFile%, Shortcut, TreeVersionShortcut
-  IniWrite, %ExplorerShortcut%,          %IniFile%, Shortcut, ExplorerShortcut
-  IniWrite, %FindCheckoutShortcut%,      %IniFile%, Shortcut, FindCheckoutShortcut
-  IniWrite, %ElementPropertiesShortcut%, %IniFile%, Shortcut, ElementPropertiesShortcut
-  IniWrite, %VersionPropertiesShortcut%, %IniFile%, Shortcut, VersionPropertiesShortcut
+  IniWrite, %MainShortcut%,               %IniFile%, Shortcut, MainShortcut
+  IniWrite, %CheckOutShortcut%,           %IniFile%, Shortcut, CheckOutShortcut
+  IniWrite, %CheckInShortcut%,            %IniFile%, Shortcut, CheckInShortcut
+  IniWrite, %UnCheckOutShortcut%,         %IniFile%, Shortcut, UnCheckOutShortcut
+  IniWrite, %HistoryShortcut%,            %IniFile%, Shortcut, HistoryShortcut
+  IniWrite, %ComparePrevShortcut%,        %IniFile%, Shortcut, ComparePrevShortcut
+  IniWrite, %TreeVersionShortcut%,        %IniFile%, Shortcut, TreeVersionShortcut
+  IniWrite, %ExplorerShortcut%,           %IniFile%, Shortcut, ExplorerShortcut
+  IniWrite, %FindCheckoutShortcut%,       %IniFile%, Shortcut, FindCheckoutShortcut
+  IniWrite, %ElementPropertiesShortcut%,  %IniFile%, Shortcut, ElementPropertiesShortcut
+  IniWrite, %VersionPropertiesShortcut%,  %IniFile%, Shortcut, VersionPropertiesShortcut
+  IniWrite, %AddToSourceControlShortcut%, %IniFile%, Shortcut, AddToSourceControlShortcut
+  IniWrite, %EditConfigSpecShortcut%,     %IniFile%, Shortcut, EditConfigSpecShortcut
   ;; Section Title
   IniWrite, %ExplorerTitle%,              %IniFile%, Title, ExplorerTitle
   IniWrite, %ClearCaseFindCheckoutTitle%, %IniFile%, Title, ClearCaseFindCheckoutTitle
@@ -1393,7 +1764,11 @@ MenuCreateSaveIni:
   IniWrite, %ClearCaseExplorerTitle%,     %IniFile%, Title, ClearCaseExplorerTitle
   IniWrite, %ClearCaseTreeVersionTitle%,  %IniFile%, Title, ClearCaseTreeVersionTitle
   IniWrite, %UltraEditTitle%,             %IniFile%, Title, UltraEditTitle
-  IniWrite, %EmacsTitle%,                 %IniFile%, Title, EmacsTitle
+  ;; Section Contextual Menu
+  IniWrite, %ContextMenuTime%,   %IniFile%, ContextMenu, ContextMenuTime
+  IniWrite, %ContextMenuEnable%, %IniFile%, ContextMenu, ContextMenuEnable
+  ;; Section Config Spec
+  IniWrite, %ConfigSpecFileName%, %IniFile%, ConfigSpec, ConfigSpecFileName
   ;;
   ;; display a traytip to indicate file save
   TrayTip, %SoftwareName%, %IniFile% file saved., 5, 1

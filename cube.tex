@@ -1,0 +1,930 @@
+\documentclass[parskip]{scrartcl}
+\usepackage[top=0.5cm, bottom=0.5cm, left=1.5cm, right=1.5cm]{geometry}
+\usepackage{setspace}
+\setstretch{0.01}
+\usepackage{multicol}
+
+\usepackage{tikz}
+\usetikzlibrary{positioning, 3D}
+
+%% new function to have rotation with 3D figure
+%% thanks to Edit2: from http://tex.stackexchange.com/a/67588
+\newcommand{\savedx}{0}
+\newcommand{\savedy}{0}
+\newcommand{\savedz}{0}
+\newcommand{\rotateRPY}[4][0/0/0]% point to be saved to \savedxyz, roll, pitch, yaw
+{
+  \pgfmathsetmacro{\rollangle}{#2}
+  \pgfmathsetmacro{\pitchangle}{#3}
+  \pgfmathsetmacro{\yawangle}{#4}
+  % to what vector is the x unit vector transformed, and which 2D vector is this?
+  \pgfmathsetmacro{\newxx}{cos(\yawangle)*cos(\pitchangle)}% a
+  \pgfmathsetmacro{\newxy}{sin(\yawangle)*cos(\pitchangle)}% d
+  \pgfmathsetmacro{\newxz}{-sin(\pitchangle)}% g
+  \path (\newxx,\newxy,\newxz);
+  \pgfgetlastxy{\nxx}{\nxy};
+  % to what vector is the y unit vector transformed, and which 2D vector is this?
+  \pgfmathsetmacro{\newyx}{cos(\yawangle)*sin(\pitchangle)*sin(\rollangle)-sin(\yawangle)*cos(\rollangle)}% b
+  \pgfmathsetmacro{\newyy}{sin(\yawangle)*sin(\pitchangle)*sin(\rollangle)+ cos(\yawangle)*cos(\rollangle)}% e
+  \pgfmathsetmacro{\newyz}{cos(\pitchangle)*sin(\rollangle)}% h
+  \path (\newyx,\newyy,\newyz);
+  \pgfgetlastxy{\nyx}{\nyy};
+  % to what vector is the z unit vector transformed, and which 2D vector is this?
+  \pgfmathsetmacro{\newzx}{cos(\yawangle)*sin(\pitchangle)*cos(\rollangle)+ sin(\yawangle)*sin(\rollangle)}
+  \pgfmathsetmacro{\newzy}{sin(\yawangle)*sin(\pitchangle)*cos(\rollangle)-cos(\yawangle)*sin(\rollangle)}
+  \pgfmathsetmacro{\newzz}{cos(\pitchangle)*cos(\rollangle)}
+  \path (\newzx,\newzy,\newzz);
+  \pgfgetlastxy{\nzx}{\nzy};
+  % transform the point given by #1
+  \foreach \x/\y/\z in {#1}
+  {
+    \pgfmathsetmacro{\transformedx}{\x*\newxx+\y*\newyx+\z*\newzx}
+    \pgfmathsetmacro{\transformedy}{\x*\newxy+\y*\newyy+\z*\newzy}
+    \pgfmathsetmacro{\transformedz}{\x*\newxz+\y*\newyz+\z*\newzz}
+    \xdef\savedx{\transformedx}
+    \xdef\savedy{\transformedy}
+    \xdef\savedz{\transformedz}
+  }
+}
+
+\tikzset{
+  % to have 3D rotation
+  RPY/.style={x={(\nxx,\nxy)},y={(\nyx,\nyy)},z={(\nzx,\nzy)}},
+}
+
+%% axe
+%\draw [->] (0, 0, 0) -- (3, 0, 0); % x
+%\draw [->] (0, 0, 0) -- (0, 3, 0); % y
+%\draw [->] (0, 0, 0) -- (0, 0, 3); % z
+
+\begin{document}
+\section* {3x3x3}
+\subsection* {Two Phases OLL}
+\subsubsection* {Orient edges}
+%% list will be in two column
+%% 1     3
+%% 2     4
+\begin{multicols}{2}
+  \begin{description}
+  \item[]
+    % Vlad
+    \begin{tikzpicture}[scale=0.25]
+      % square
+      \draw [thick, fill=gray]   (0, 0) -- (1, 0) -- (1, 1) -- (0, 1) -- cycle;
+      \draw [thick, fill=gray]   (1, 0) -- (2, 0) -- (2, 1) -- (1, 1) -- cycle;
+      \draw [thick, fill=gray]   (2, 0) -- (3, 0) -- (3, 1) -- (2, 1) -- cycle;
+      \draw [thick, fill=yellow] (0, 1) -- (1, 1) -- (1, 2) -- (0, 2) -- cycle;
+      \draw [thick, fill=yellow] (1, 1) -- (2, 1) -- (2, 2) -- (1, 2) -- cycle;
+      \draw [thick, fill=gray]   (2, 1) -- (3, 1) -- (3, 2) -- (2, 2) -- cycle;
+      \draw [thick, fill=gray]   (0, 2) -- (1, 2) -- (1, 3) -- (0, 3) -- cycle;
+      \draw [thick, fill=yellow] (1, 2) -- (2, 2) -- (2, 3) -- (1, 3) -- cycle;
+      \draw [thick, fill=gray]   (2, 2) -- (3, 2) -- (3, 3) -- (2, 3) -- cycle;
+      % recognition bold line
+      \draw [white]       (-0.25, 1) -- (-0.25, 2) -- (-0.50, 2) -- (-0.50, 1) -- cycle; % left edge
+      \draw [fill=yellow] (3.25, 1) -- (3.25, 2) -- (3.5, 2) -- (3.5, 1) -- cycle;       % right edge
+      \draw [white]       (1, 3.25) -- (2, 3.25) -- (2, 3.5) -- (1, 3.5) -- cycle;       % up edge
+      \draw [fill=yellow] (1, -0.25) -- (2, -0.25) -- (2, -0.5) -- (1, -0.5) -- cycle;   % down edge
+    \end{tikzpicture}
+    F (U R U' R') F' ``Vlad''
+    \newline
+
+  \item[]
+    % Troll
+    \begin{tikzpicture}[scale=0.25]
+      % square
+      \draw [thick, fill=gray]   (0, 0) -- (1, 0) -- (1, 1) -- (0, 1) -- cycle;
+      \draw [thick, fill=gray]   (1, 0) -- (2, 0) -- (2, 1) -- (1, 1) -- cycle;
+      \draw [thick, fill=gray]   (2, 0) -- (3, 0) -- (3, 1) -- (2, 1) -- cycle;
+      \draw [thick, fill=yellow] (0, 1) -- (1, 1) -- (1, 2) -- (0, 2) -- cycle;
+      \draw [thick, fill=yellow] (1, 1) -- (2, 1) -- (2, 2) -- (1, 2) -- cycle;
+      \draw [thick, fill=yellow]   (2, 1) -- (3, 1) -- (3, 2) -- (2, 2) -- cycle;
+      \draw [thick, fill=gray]   (0, 2) -- (1, 2) -- (1, 3) -- (0, 3) -- cycle;
+      \draw [thick, fill=gray] (1, 2) -- (2, 2) -- (2, 3) -- (1, 3) -- cycle;
+      \draw [thick, fill=gray]   (2, 2) -- (3, 2) -- (3, 3) -- (2, 3) -- cycle;
+      % recognition bold line
+      \draw [white]       (-0.25, 1) -- (-0.25, 2) -- (-0.50, 2) -- (-0.50, 1) -- cycle; % left edge
+      \draw [white]       (3.25, 1) -- (3.25, 2) -- (3.5, 2) -- (3.5, 1) -- cycle;       % right edge
+      \draw [fill=yellow] (1, 3.25) -- (2, 3.25) -- (2, 3.5) -- (1, 3.5) -- cycle;       % up edge
+      \draw [fill=yellow] (1, -0.25) -- (2, -0.25) -- (2, -0.5) -- (1, -0.5) -- cycle;   % down
+    \end{tikzpicture}
+    F (R U R' U') F' ``Troll''
+  \end{description}
+\end{multicols}
+
+\subsubsection* {Orient corners}
+\begin{multicols}{2}
+  \begin{description}
+  \item[]
+    % Sune
+    \begin{tikzpicture}[scale=0.25]
+      % square
+      \draw [thick, fill=gray]   (0, 0) -- (1, 0) -- (1, 1) -- (0, 1) -- cycle;
+      \draw [thick, fill=yellow] (1, 0) -- (2, 0) -- (2, 1) -- (1, 1) -- cycle;
+      \draw [thick, fill=gray] (2, 0) -- (3, 0) -- (3, 1) -- (2, 1) -- cycle;
+      \draw [thick, fill=yellow] (0, 1) -- (1, 1) -- (1, 2) -- (0, 2) -- cycle;
+      \draw [thick, fill=yellow] (1, 1) -- (2, 1) -- (2, 2) -- (1, 2) -- cycle;
+      \draw [thick, fill=yellow] (2, 1) -- (3, 1) -- (3, 2) -- (2, 2) -- cycle;
+      \draw [thick, fill=yellow] (0, 2) -- (1, 2) -- (1, 3) -- (0, 3) -- cycle;
+      \draw [thick, fill=yellow] (1, 2) -- (2, 2) -- (2, 3) -- (1, 3) -- cycle;
+      \draw [thick, fill=gray]   (2, 2) -- (3, 2) -- (3, 3) -- (2, 3) -- cycle;
+      % recognition bold line
+      \draw [white]       (0, 3.25) -- (1, 3.25) -- (1, 3.5) -- (0, 3.5) -- cycle;     % up-left
+      \draw [white]       (2, 3.25) -- (3, 3.25) -- (3, 3.5) -- (2, 3.5) -- cycle;     % up-right
+      \draw [white]       (0, -0.25) -- (1, -0.25) -- (1, -0.5) -- (0, -0.5) -- cycle; % down-left
+      \draw [fill=yellow] (2, -0.25) -- (3, -0.25) -- (3, -0.5) -- (2, -0.5) -- cycle; % down-right
+      \draw [white]       (-0.25, 2) -- (-0.25, 3) -- (-0.5, 3) -- (-0.5, 2) -- cycle; % left-up
+      \draw [fill=yellow] (-0.25, 0) -- (-0.25, 1) -- (-0.5, 1) -- (-0.5, 0) -- cycle; % left-down
+      \draw [fill=yellow] (3.25, 2) -- (3.25, 3) -- (3.5, 3) -- (3.5, 2) -- cycle;     % right-up
+      \draw [white]       (3.25, 0) -- (3.25, 1) -- (3.5, 1) -- (3.5, 0) -- cycle;     % right-down
+    \end{tikzpicture}
+    R U R' U R U2 R' ``Sune''
+    \newline
+
+  \item[]
+    % Anti-Sune
+    \begin{tikzpicture}[scale=0.25]
+      % square
+      \draw [thick, fill=gray]   (0, 0) -- (1, 0) -- (1, 1) -- (0, 1) -- cycle;
+      \draw [thick, fill=yellow] (1, 0) -- (2, 0) -- (2, 1) -- (1, 1) -- cycle;
+      \draw [thick, fill=yellow] (2, 0) -- (3, 0) -- (3, 1) -- (2, 1) -- cycle;
+      \draw [thick, fill=yellow] (0, 1) -- (1, 1) -- (1, 2) -- (0, 2) -- cycle;
+      \draw [thick, fill=yellow] (1, 1) -- (2, 1) -- (2, 2) -- (1, 2) -- cycle;
+      \draw [thick, fill=yellow] (2, 1) -- (3, 1) -- (3, 2) -- (2, 2) -- cycle;
+      \draw [thick, fill=gray]   (0, 2) -- (1, 2) -- (1, 3) -- (0, 3) -- cycle;
+      \draw [thick, fill=yellow] (1, 2) -- (2, 2) -- (2, 3) -- (1, 3) -- cycle;
+      \draw [thick, fill=gray]   (2, 2) -- (3, 2) -- (3, 3) -- (2, 3) -- cycle;
+      % recognition bold line
+      \draw [white]       (0, 3.25) -- (1, 3.25) -- (1, 3.5) -- (0, 3.5) -- cycle;     % up-left
+      \draw [fill=yellow] (2, 3.25) -- (3, 3.25) -- (3, 3.5) -- (2, 3.5) -- cycle;     % up-right
+      \draw [fill=yellow] (0, -0.25) -- (1, -0.25) -- (1, -0.5) -- (0, -0.5) -- cycle; % down-left
+      \draw [white]       (2, -0.25) -- (3, -0.25) -- (3, -0.5) -- (2, -0.5) -- cycle; % down-right
+      \draw [fill=yellow] (-0.25, 2) -- (-0.25, 3) -- (-0.5, 3) -- (-0.5, 2) -- cycle; % left-up
+      \draw [white]       (-0.25, 0) -- (-0.25, 1) -- (-0.5, 1) -- (-0.5, 0) -- cycle; % left-down
+      \draw [white]       (3.25, 2) -- (3.25, 3) -- (3.5, 3) -- (3.5, 2) -- cycle;     % right-up
+      \draw [white]       (3.25, 0) -- (3.25, 1) -- (3.5, 1) -- (3.5, 0) -- cycle;     % right-down
+    \end{tikzpicture}
+    R U2 R' U' R U' R ``Anti-Sune''
+    \newline
+  \end{description}
+\end{multicols}
+
+\begin{multicols}{2}
+  \begin{description}
+  \item[]
+  \item[]
+    % _
+    %
+    % |
+    \begin{tikzpicture}[scale=0.25]
+      % square
+      \draw [thick, fill=gray]   (0, 0) -- (1, 0) -- (1, 1) -- (0, 1) -- cycle;
+      \draw [thick, fill=yellow] (1, 0) -- (2, 0) -- (2, 1) -- (1, 1) -- cycle;
+      \draw [thick, fill=yellow] (2, 0) -- (3, 0) -- (3, 1) -- (2, 1) -- cycle;
+      \draw [thick, fill=yellow] (0, 1) -- (1, 1) -- (1, 2) -- (0, 2) -- cycle;
+      \draw [thick, fill=yellow] (1, 1) -- (2, 1) -- (2, 2) -- (1, 2) -- cycle;
+      \draw [thick, fill=yellow] (2, 1) -- (3, 1) -- (3, 2) -- (2, 2) -- cycle;
+      \draw [thick, fill=yellow] (0, 2) -- (1, 2) -- (1, 3) -- (0, 3) -- cycle;
+      \draw [thick, fill=yellow] (1, 2) -- (2, 2) -- (2, 3) -- (1, 3) -- cycle;
+      \draw [thick, fill=gray]   (2, 2) -- (3, 2) -- (3, 3) -- (2, 3) -- cycle;
+      % recognition bold line
+      \draw [white]       (0, 3.25) -- (1, 3.25) -- (1, 3.5) -- (0, 3.5) -- cycle;     % up-left
+      \draw [fill=yellow] (2, 3.25) -- (3, 3.25) -- (3, 3.5) -- (2, 3.5) -- cycle;     % up-right
+      \draw [white]       (0, -0.25) -- (1, -0.25) -- (1, -0.5) -- (0, -0.5) -- cycle; % down-left
+      \draw [white]       (2, -0.25) -- (3, -0.25) -- (3, -0.5) -- (2, -0.5) -- cycle; % down-right
+      \draw [white]       (-0.25, 2) -- (-0.25, 3) -- (-0.5, 3) -- (-0.5, 2) -- cycle; % left-up
+      \draw [fill=yellow] (-0.25, 0) -- (-0.25, 1) -- (-0.5, 1) -- (-0.5, 0) -- cycle; % left-down
+      \draw [white]       (3.25, 2) -- (3.25, 3) -- (3.5, 3) -- (3.5, 2) -- cycle;     % right-up
+      \draw [white]       (3.25, 0) -- (3.25, 1) -- (3.5, 1) -- (3.5, 0) -- cycle;     % right-down
+    \end{tikzpicture}
+    R U2 R' U' R U R' U' R U R' U' R U' R'
+    \newline
+
+  \item[]
+    %
+    %
+    % | |
+    \begin{tikzpicture}[scale=0.25]
+      % square
+      \draw [thick, fill=gray]   (0, 0) -- (1, 0) -- (1, 1) -- (0, 1) -- cycle;
+      \draw [thick, fill=yellow] (1, 0) -- (2, 0) -- (2, 1) -- (1, 1) -- cycle;
+      \draw [thick, fill=gray] (2, 0) -- (3, 0) -- (3, 1) -- (2, 1) -- cycle;
+      \draw [thick, fill=yellow] (0, 1) -- (1, 1) -- (1, 2) -- (0, 2) -- cycle;
+      \draw [thick, fill=yellow] (1, 1) -- (2, 1) -- (2, 2) -- (1, 2) -- cycle;
+      \draw [thick, fill=yellow] (2, 1) -- (3, 1) -- (3, 2) -- (2, 2) -- cycle;
+      \draw [thick, fill=yellow] (0, 2) -- (1, 2) -- (1, 3) -- (0, 3) -- cycle;
+      \draw [thick, fill=yellow] (1, 2) -- (2, 2) -- (2, 3) -- (1, 3) -- cycle;
+      \draw [thick, fill=yellow]   (2, 2) -- (3, 2) -- (3, 3) -- (2, 3) -- cycle;
+      % recognition bold line
+      \draw [white]       (0, 3.25) -- (1, 3.25) -- (1, 3.5) -- (0, 3.5) -- cycle;     % up-left
+      \draw [white]       (2, 3.25) -- (3, 3.25) -- (3, 3.5) -- (2, 3.5) -- cycle;     % up-right
+      \draw [white]       (0, -0.25) -- (1, -0.25) -- (1, -0.5) -- (0, -0.5) -- cycle; % down-left
+      \draw [white]       (2, -0.25) -- (3, -0.25) -- (3, -0.5) -- (2, -0.5) -- cycle; % down-right
+      \draw [white]       (-0.25, 2) -- (-0.25, 3) -- (-0.5, 3) -- (-0.5, 2) -- cycle; % left-up
+      \draw [fill=yellow] (-0.25, 0) -- (-0.25, 1) -- (-0.5, 1) -- (-0.5, 0) -- cycle; % left-down
+      \draw [white]       (3.25, 2) -- (3.25, 3) -- (3.5, 3) -- (3.5, 2) -- cycle;     % right-up
+      \draw [fill=yellow] (3.25, 0) -- (3.25, 1) -- (3.5, 1) -- (3.5, 0) -- cycle;     % right-down
+    \end{tikzpicture}
+    R
+    \newline
+
+  \item[]
+    %
+    %
+    % _ _
+    \begin{tikzpicture}[scale=0.25]
+      % square
+      \draw [thick, fill=gray]   (0, 0) -- (1, 0) -- (1, 1) -- (0, 1) -- cycle;
+      \draw [thick, fill=yellow] (1, 0) -- (2, 0) -- (2, 1) -- (1, 1) -- cycle;
+      \draw [thick, fill=gray] (2, 0) -- (3, 0) -- (3, 1) -- (2, 1) -- cycle;
+      \draw [thick, fill=yellow] (0, 1) -- (1, 1) -- (1, 2) -- (0, 2) -- cycle;
+      \draw [thick, fill=yellow] (1, 1) -- (2, 1) -- (2, 2) -- (1, 2) -- cycle;
+      \draw [thick, fill=yellow] (2, 1) -- (3, 1) -- (3, 2) -- (2, 2) -- cycle;
+      \draw [thick, fill=yellow] (0, 2) -- (1, 2) -- (1, 3) -- (0, 3) -- cycle;
+      \draw [thick, fill=yellow] (1, 2) -- (2, 2) -- (2, 3) -- (1, 3) -- cycle;
+      \draw [thick, fill=yellow]   (2, 2) -- (3, 2) -- (3, 3) -- (2, 3) -- cycle;
+      % recognition bold line
+      \draw [white]       (0, 3.25) -- (1, 3.25) -- (1, 3.5) -- (0, 3.5) -- cycle;     % up-left
+      \draw [white]       (2, 3.25) -- (3, 3.25) -- (3, 3.5) -- (2, 3.5) -- cycle;     % up-right
+      \draw [fill=yellow] (0, -0.25) -- (1, -0.25) -- (1, -0.5) -- (0, -0.5) -- cycle; % down-left
+      \draw [fill=yellow] (2, -0.25) -- (3, -0.25) -- (3, -0.5) -- (2, -0.5) -- cycle; % down-right
+      \draw [white]       (-0.25, 2) -- (-0.25, 3) -- (-0.5, 3) -- (-0.5, 2) -- cycle; % left-up
+      \draw [white]       (-0.25, 0) -- (-0.25, 1) -- (-0.5, 1) -- (-0.5, 0) -- cycle; % left-down
+      \draw [white]       (3.25, 2) -- (3.25, 3) -- (3.5, 3) -- (3.5, 2) -- cycle;     % right-up
+      \draw [white]       (3.25, 0) -- (3.25, 1) -- (3.5, 1) -- (3.5, 0) -- cycle;     % right-down
+    \end{tikzpicture}
+    R2 D R' U2 R D' R' U2 R'
+    \newline
+
+  \item[]
+    % | |
+    %
+    % | |
+    \begin{tikzpicture}[scale=0.25]
+      % square
+      \draw [thick, fill=gray]   (0, 0) -- (1, 0) -- (1, 1) -- (0, 1) -- cycle;
+      \draw [thick, fill=yellow] (1, 0) -- (2, 0) -- (2, 1) -- (1, 1) -- cycle;
+      \draw [thick, fill=gray]   (2, 0) -- (3, 0) -- (3, 1) -- (2, 1) -- cycle;
+      \draw [thick, fill=yellow] (0, 1) -- (1, 1) -- (1, 2) -- (0, 2) -- cycle;
+      \draw [thick, fill=yellow] (1, 1) -- (2, 1) -- (2, 2) -- (1, 2) -- cycle;
+      \draw [thick, fill=yellow] (2, 1) -- (3, 1) -- (3, 2) -- (2, 2) -- cycle;
+      \draw [thick, fill=gray]   (0, 2) -- (1, 2) -- (1, 3) -- (0, 3) -- cycle;
+      \draw [thick, fill=yellow] (1, 2) -- (2, 2) -- (2, 3) -- (1, 3) -- cycle;
+      \draw [thick, fill=gray]   (2, 2) -- (3, 2) -- (3, 3) -- (2, 3) -- cycle;
+      % recognition bold line
+      \draw [white]       (0, 3.25) -- (1, 3.25) -- (1, 3.5) -- (0, 3.5) -- cycle;     % up-left
+      \draw [white]       (2, 3.25) -- (3, 3.25) -- (3, 3.5) -- (2, 3.5) -- cycle;     % up-right
+      \draw [white]       (0, -0.25) -- (1, -0.25) -- (1, -0.5) -- (0, -0.5) -- cycle; % down-left
+      \draw [white]       (2, -0.25) -- (3, -0.25) -- (3, -0.5) -- (2, -0.5) -- cycle; % down-right
+      \draw [fill=yellow] (-0.25, 2) -- (-0.25, 3) -- (-0.5, 3) -- (-0.5, 2) -- cycle; % left-up
+      \draw [fill=yellow] (-0.25, 0) -- (-0.25, 1) -- (-0.5, 1) -- (-0.5, 0) -- cycle; % left-down
+      \draw [fill=yellow] (3.25, 2) -- (3.25, 3) -- (3.5, 3) -- (3.5, 2) -- cycle;     % right-up
+      \draw [fill=yellow] (3.25, 0) -- (3.25, 1) -- (3.5, 1) -- (3.5, 0) -- cycle;     % right-down
+    \end{tikzpicture}
+    R U R' U R U' R' U R U2 R'
+    \newline
+
+  \item[]
+    % _
+    % |
+    %
+    % | _
+    \begin{tikzpicture}[scale=0.25]
+      % square
+      \draw [thick, fill=gray]   (0, 0) -- (1, 0) -- (1, 1) -- (0, 1) -- cycle;
+      \draw [thick, fill=yellow] (1, 0) -- (2, 0) -- (2, 1) -- (1, 1) -- cycle;
+      \draw [thick, fill=gray]   (2, 0) -- (3, 0) -- (3, 1) -- (2, 1) -- cycle;
+      \draw [thick, fill=yellow] (0, 1) -- (1, 1) -- (1, 2) -- (0, 2) -- cycle;
+      \draw [thick, fill=yellow] (1, 1) -- (2, 1) -- (2, 2) -- (1, 2) -- cycle;
+      \draw [thick, fill=yellow] (2, 1) -- (3, 1) -- (3, 2) -- (2, 2) -- cycle;
+      \draw [thick, fill=gray]   (0, 2) -- (1, 2) -- (1, 3) -- (0, 3) -- cycle;
+      \draw [thick, fill=yellow] (1, 2) -- (2, 2) -- (2, 3) -- (1, 3) -- cycle;
+      \draw [thick, fill=gray]   (2, 2) -- (3, 2) -- (3, 3) -- (2, 3) -- cycle;
+      % recognition bold line
+      \draw [white]       (0, 3.25) -- (1, 3.25) -- (1, 3.5) -- (0, 3.5) -- cycle;     % up-left
+      \draw [fill=yellow] (2, 3.25) -- (3, 3.25) -- (3, 3.5) -- (2, 3.5) -- cycle;     % up-right
+      \draw [white]       (0, -0.25) -- (1, -0.25) -- (1, -0.5) -- (0, -0.5) -- cycle; % down-left
+      \draw [fill=yellow] (2, -0.25) -- (3, -0.25) -- (3, -0.5) -- (2, -0.5) -- cycle; % down-right
+      \draw [fill=yellow] (-0.25, 2) -- (-0.25, 3) -- (-0.5, 3) -- (-0.5, 2) -- cycle; % left-up
+      \draw [fill=yellow] (-0.25, 0) -- (-0.25, 1) -- (-0.5, 1) -- (-0.5, 0) -- cycle; % left-down
+      \draw [white]       (3.25, 2) -- (3.25, 3) -- (3.5, 3) -- (3.5, 2) -- cycle;     % right-up
+      \draw [white]       (3.25, 0) -- (3.25, 1) -- (3.5, 1) -- (3.5, 0) -- cycle;     % right-down
+    \end{tikzpicture}
+    R U2 R2 U' R2 U' R2 U2 R
+    \newline
+  \end{description}
+\end{multicols}
+
+\subsection* {PLL}
+\begin{description}
+  \item[]
+  % U
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % spins edge (time direction)
+    \draw [thick, red, <->] (0.5, 1.5) -- (2.5, 1.5);
+    \draw [thick, red, <->] (1.5, 0.5) -- (1.5, 2.5);
+    % recognition bold line
+    \draw [ultra thick] (-0.25, 1) -- (-0.25, 0);
+    \draw [ultra thick] (0, -0.25) -- (1, -0.25);
+    \draw [ultra thick] (2, -0.25) -- (3, -0.25);
+    \draw [ultra thick] (3.25, 0) -- (3.25, 1);
+    \draw [ultra thick] (3.25, 2) -- (3.25, 3);
+    \draw [ultra thick] (3, 3.25) -- (2, 3.25);
+    \draw [ultra thick] (1, 3.25) -- (0, 3.25);
+    \draw [ultra thick] (-0.25, 2) -- (-0.25, 3);
+  \end{tikzpicture}
+  (R2 U2 R2 U2) R2 U (R2 U2 R2 U2) R2 U' ``U''
+  \newline
+
+  \item[]
+  % H
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % cross
+    \draw [thick, red, <->] (0.5, 1.5) -- (2.5, 1.5);
+    \draw [thick, red, <->] (1.5, 0.5) -- (1.5, 2.5);
+    % recognition bold line
+    \draw [ultra thick] (-0.25, 1) -- (-0.25, 0);
+    \draw [ultra thick] (0, -0.25) -- (1, -0.25);
+    \draw [ultra thick] (2, -0.25) -- (3, -0.25);
+    \draw [ultra thick] (3.25, 0) -- (3.25, 1);
+    \draw [ultra thick] (3.25, 2) -- (3.25, 3);
+    \draw [ultra thick] (3, 3.25) -- (2, 3.25);
+    \draw [ultra thick] (1, 3.25) -- (0, 3.25);
+    \draw [ultra thick] (-0.25, 2) -- (-0.25, 3);
+  \end{tikzpicture}
+  (R2 U2 R2 U2) R2 U (R2 U2 R2 U2) R2 U' ``H''
+  \newline
+\end{description}
+
+\begin{multicols}{2}
+  \begin{description}
+  \item[]
+  % Ja
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % reverse J
+    \draw [thick, red, <->] (2.5, 0.5) -- (2.5, 2.5);
+    \draw [thick, red, <->] (1.5, 2.5) -- (2.5, 1.5);
+    % recognition bold line
+    \draw [ultra thick] (2, -0.25) -- (-0.25, -0.25) -- (-0.25, 3);
+    % invisble line to align cube
+    \draw [ultra thick, white] (3.25, 2) -- (3.25, 3.25) -- (2, 3.25);
+  \end{tikzpicture}
+  (R' U2 R) U z D' (R2 U)(R' D R U') ``Ja''
+  \newline
+
+  \item[]
+  % Jb
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % J
+    \draw [thick, red, <->] (2.5, 0.5) -- (2.5, 2.5);
+    \draw [thick, red, <->] (1.5, 0.5) -- (2.5, 1.5);
+    % recognition bold line
+    \draw [ultra thick] (-0.25, 0) -- (-0.25, 3.25) -- (2, 3.25);
+    % invisble line to align cube
+    \draw [ultra thick, white] (3.25, 1) -- (3.25, -0.25) -- (2, -0.25);
+  \end{tikzpicture}
+  R U R' F' R U R' U' R' F R2 U' R' U' ``Jb''
+  \newline
+  \end{description}
+\end{multicols}
+
+\begin{multicols}{2}
+  \begin{description}
+  \item[]
+  % T
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % T
+    \draw [thick, red, <->] (2.5, 0.5) -- (2.5, 2.5);
+    \draw [thick, red, <->] (0.5, 1.5) -- (2.5, 1.5);
+    % recognition bold line
+    \draw [ultra thick] (-0.25, 0) -- (-0.25, 1);
+    \draw [ultra thick] (-0.25, 2) -- (-0.25, 3);
+    \draw [ultra thick] (0, 3.25) -- (2, 3.25);
+    \draw [ultra thick] (0, -0.25) -- (2, -0.25);
+    % invisble line to align cube
+    \draw [ultra thick, white] (3.25, 2) -- (3.25, 1);
+  \end{tikzpicture}
+  x' R U' R D2 R' U R D2 R2 ``T''
+  \newline
+
+  \item[]
+  % Z
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % adjacent edges
+    \draw [thick, red, <->] (1.5, 0.5) -- (2.5, 1.5);
+    \draw [thick, red, <->] (0.5, 1.5) -- (1.5, 2.5);
+    % recognition bold line
+    \draw [ultra thick] (-0.25, 1) -- (-0.25, 0);
+    \draw [ultra thick] (0, -0.25) -- (1, -0.25);
+    \draw [ultra thick] (2, -0.25) -- (3, -0.25);
+    \draw [ultra thick] (3.25, 0) -- (3.25, 1);
+    \draw [ultra thick] (3.25, 2) -- (3.25, 3);
+    \draw [ultra thick] (3, 3.25) -- (2, 3.25);
+    \draw [ultra thick] (1, 3.25) -- (0, 3.25);
+    \draw [ultra thick] (-0.25, 2) -- (-0.25, 3);
+  \end{tikzpicture}
+  M2 U M2 U M U2 M2 U2 M U2 ``Z''
+  \newline
+  \end{description}
+\end{multicols}
+
+\begin{description}
+  \item[]
+  % F
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % =
+    \draw [thick, red, <->] (1.5, 0.5) -- (1.5, 2.5);
+    \draw [thick, red, <->] (2.5, 0.5) -- (2.5, 2.5);
+    % recognition bold line
+    \draw [ultra thick] (1, -0.25) -- (-0.25, -0.25) -- (-0.25, 3.25) -- (1, 3.25);
+    \draw [ultra thick] (3.25, 1) -- (3.25, 2);
+  \end{tikzpicture}
+  R' U' F' (R U R' U') R' F R2 U' (R' U' R U) R' U R ``F''
+  \newline
+
+  \item[]
+  % V
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % arrow down left
+    \draw [thick, red, <->] (2.5, 0.5) -- (0.5, 2.5);
+    \draw [thick, red, <->] (2.5, 1.5) -- (1.5, 2.5);
+    % recognition bold line
+    \draw [ultra thick] (-0.25, 2) -- (-0.25, -0.25) -- (2, -0.25);
+    \draw [ultra thick] (3.25, 2) -- (3.25, 3.25) -- (2, 3.25);
+  \end{tikzpicture}
+  R U2 R' D (R U' R U') R U R2 D R' U' R D2 ``V''
+  \newline
+
+  \item[]
+  % Y
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % arrow up left
+    \draw [thick, red, <->] (2.5, 0.5) -- (0.5, 2.5);
+    \draw [thick, red, <->] (0.5, 1.5) -- (1.5, 2.5);
+    % recognition bold line
+    \draw [ultra thick] (0, -0.25) -- (2, -0.25);
+    \draw [ultra thick] (3.25, 1) -- (3.25, 3);
+    % invisble line to align cube
+    \draw [ultra thick, white] (-0.25, 2) -- (-0.25, 3.25) -- (1, 3.25);
+  \end{tikzpicture}
+  F (R U' R' U' R U) R' F' (R U R' U') R' F R F' ``Y''
+  \newline
+
+  \item[]
+  % Rb
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % adjacent edge + adjacent corner
+    \draw [thick, red, <->] (1.5, 0.5) -- (2.5, 1.5);
+    \draw [thick, red, <->] (0.5, 2.5) -- (2.5, 2.5);
+    % recognition bold line
+    \draw [ultra thick] (-0.25, 2) -- (-0.25, -0.25) -- (1, -0.25);
+    \draw [ultra thick] (2, -0.25) -- (3, -0.25);
+    % invisble line to align cube
+    \draw [ultra thick, white] (3.25, 2) -- (3.25, 3.25) -- (2, 3.25);
+  \end{tikzpicture}
+  R' U2 R U2 R' F (R U R' U') R' F' R2 U' ``Rb''
+  \newline
+
+  \item[]
+  % Ra
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % adjacent edge + adjacent corner (mirror)
+    \draw [thick, red, <->] (0.5, 1.5) -- (1.5, 2.5);
+    \draw [thick, red, <->] (2.5, 2.5) -- (2.5, 0.5);
+    % recognition bold line
+    \draw [ultra thick] (2, -0.25) -- (-0.25, -0.25) -- (-0.25, 1);
+    \draw [ultra thick] (-0.25, 2) -- (-0.25, 3);
+    % invisble line to align cube
+    \draw [ultra thick, white] (3.25, 2) -- (3.25, 3.25) -- (2, 3.25);
+  \end{tikzpicture}
+  R U R' F' R U2 R' U2 R' F R U R U2 R' U' ``Ra''
+  \newline
+\end{description}
+
+\begin{multicols}{2}
+  \begin{description}
+  \item[]
+  % Gd
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % double spins down right (Gc reverse) (trigo direction)
+    \draw [thick, red, ->] (0.5, 2.5) -- (0.5, 0.5) -- (2.5, 2.5) -- (0.5, 2.5);
+    \draw [thick, color=red!55, ->] (1.5, 0.5) -- (0.5, 1.5) -- (1.5, 2.5) -- (1.5, 0.5);
+    % recognition bold line
+    \draw [thick, color=black!55] (-0.25, 3) -- (-0.25, 2);
+    \draw [thick, color=black!55] (-0.25, 1) -- (-0.25, 0);
+    \draw [ultra thick] (3.25, 0) -- (3.25, 2);
+    % invisble line to align cube
+    \draw [ultra thick, white] (3.25, 2) -- (3.25, 3.25) -- (2, 3.25);
+  \end{tikzpicture}
+  R U R' y' R2 u' (R U' R' U) R' u R2 ``Gd''
+  \newline
+
+  \item[]
+  % Gc
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % double spins up (Gd reverse) (time direction)
+    \draw [thick, red, ->] (0.5, 0.5) -- (0.5, 2.5) -- (2.5, 0.5) -- (0.5, 0.5);
+    \draw [thick, color=red!55, ->] (2.5, 1.5) -- (0.5, 1.5) -- (1.5, 0.5) -- (2.5, 1.5);
+    % recognition bold line
+    \draw [thick, color=black!55] (-0.25, 3) -- (-0.25, 2);
+    \draw [thick, color=black!55] (-0.25, 1) -- (-0.25, 0);
+    \draw [ultra thick] (1, 3.25) -- (3, 3.25);
+    % invisble line to align cube
+    \draw [ultra thick, white] (3.25, 1) -- (3.25, -0.25) -- (2, -0.25);
+  \end{tikzpicture}
+  R2 u' (R U' R U) R' u R2 y R U' R' ``Gc''
+  \newline
+
+  \item[]
+  % Gb
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % double spins up right (Ga reverse) (trigo direction)
+    \draw [thick, red, ->] (0.5, 0.5) -- (2.5, 0.5) -- (0.5, 2.5) -- (0.5, 0.5);
+    \draw [thick, color=red!55, ->] (1.5, 2.5) -- (1.5, 0.5) -- (0.5, 1.5) -- (1.5, 2.5);
+    % recognition bold line
+    \draw [thick, color=black!55] (-0.25, 3) -- (-0.25, 2);
+    \draw [thick, color=black!55] (-0.25, 1) -- (-0.25, 0);
+    \draw [ultra thick] (3.25, 3) -- (3.25, 1);
+    % invisble line to align cube
+    \draw [ultra thick, white] (3.25, 1) -- (3.25, -0.25) -- (2, -0.25);
+  \end{tikzpicture}
+  R' U' R y R2 u (R' U R U') R u' R2 ``Gb''
+  \newline
+
+  \item[]
+  % Ga
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % double spins up right (Ga reverse) (time direction)
+    \draw [thick, red, ->] (0.5, 2.5) -- (2.5, 2.5) -- (0.5, 0.5) -- (0.5, 2.5);
+    \draw [thick, color=red!55, ->] (2.5, 1.5) -- (1.5, 2.5) -- (0.5, 1.5) -- (2.5, 1.5);
+    % recognition bold line
+    \draw [thick, color=black!55] (-0.25, 3) -- (-0.25, 2);
+    \draw [thick, color=black!55] (-0.25, 1) -- (-0.25, 0);
+    \draw [ultra thick] (1, -0.25) -- (3, -0.25);
+    % invisble line to align cube
+    \draw [ultra thick, white] (3.25, 2) -- (3.25, 3.25) -- (2, 3.25);
+  \end{tikzpicture}
+  R2 u (R' U R' U') R u' R2 y' R' U R ``Ga''
+  \newline
+  \end{description}
+\end{multicols}
+
+\begin{multicols}{2}
+\begin{description}
+  \item[]
+  % Aa
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % spins corners (Ab reverse) (time direction)
+    \draw [thick, red, ->] (2.5, 2.5) -- (2.5, 0.5) -- (0.5, 2.5) -- (2.5, 2.5);
+    % recognition bold line
+    \draw [thick, color=black!55] (3, 3.25) -- (2, 3.25);
+    \draw [thick, color=black!55] (1, 3.25) -- (0, 3.25);
+    \draw [ultra thick] (-0.25, 2) -- (-0.25, -0.25) -- (2, -0.25);
+    % invisble line to align cube
+    \draw [ultra thick, white] (3.25, 2) -- (3.25, 1);
+  \end{tikzpicture}
+  x R' U R' D2 R U' R' D2 R2 ``Aa''
+  \newline
+
+  \item[]
+  % Ab
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % spins corners (Aa reverse) (trigo direction)
+    \draw [thick, red, ->] (2.5, 0.5) -- (2.5, 2.5) -- (0.5, 0.5) -- (2.5, 0.5);
+    % recognition bold line
+    \draw [thick, color=black!55] (3, -0.25) -- (2, -0.25);
+    \draw [thick, color=black!55] (1, -0.25) -- (0, -0.25);
+    \draw [ultra thick] (-0.25, 1) -- (-0.25, 3.25) -- (2, 3.25);
+    % invisble line to align cube
+    \draw [ultra thick, white] (3.25, 2) -- (3.25, 1);
+  \end{tikzpicture}
+  x' R U' R D2 R' U R D2 R2 ``Ab''
+  \newline
+  \end{description}
+\end{multicols}
+
+\begin{description}
+  \item[]
+  % Na
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % snake (trigo direction)
+    \draw [thick, red, <->] (0.5, 1.5) -- (2.5, 1.5);
+    \draw [thick, red, <->] (0.5, 0.5) -- (2.5, 2.5);
+    % recognition bold line
+    \draw [ultra thick] (1, -0.25) -- (3, -0.25);
+    \draw [ultra thick] (3.25, 1) -- (3.25, 3);
+    \draw [ultra thick] (2, 3.25) -- (0, 3.25);
+    \draw [ultra thick] (-0.25, 2) -- (-0.25, 0);
+  \end{tikzpicture}
+  R U R' U R U R' F' R U R' U' R' F R2 U' R' U2 R U' R' ``Na''
+  \newline
+
+  \item[]
+  % Nb
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % snake (time direction)
+    \draw [thick, red, <->] (0.5, 1.5) -- (2.5, 1.5);
+    \draw [thick, red, <->] (2.5, 0.5) -- (0.5, 2.5);
+    % recognition bold line
+    \draw [ultra thick] (0, -0.25) -- (2, -0.25);
+    \draw [ultra thick] (3.25, 0) -- (3.25, 2);
+    \draw [ultra thick] (3, 3.25) -- (1, 3.25);
+    \draw [ultra thick] (-0.25, 3) -- (-0.25, 1);
+  \end{tikzpicture}
+  R' U R U' R' F' U' F R U R' F R' F' R U' R ``Nb''
+  \newline
+
+  \item[]
+  % E
+  \begin{tikzpicture}[scale=0.25]
+    % square
+    \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+    % switch all corners
+    \draw [thick, red, <->] (0.5, 0.5) -- (0.5, 2.5);
+    \draw [thick, red, <->] (2.5, 0.5) -- (2.5, 2.5);
+    % recognition bold line
+    \draw [ultra thick] (2, -0.25) -- (3, -0.25);
+    \draw [ultra thick] (3.25, 1) -- (3.25, 2);
+    \draw [ultra thick] (2, 3.25) -- (3, 3.25);
+    % invisble line to align cube
+    \draw [ultra thick, white] (-0.25, 2) -- (-0.25, 1);
+  \end{tikzpicture}
+  x' R U' R' D R U R' D' R U R' D R U' R' D' ``E''
+\end{description}
+
+\subsection* {Figure}
+  % Mini Cube
+  \begin{tikzpicture}[scale=0.5]
+    \rotateRPY{5}{-5}{0}
+    \begin{scope}[RPY]
+      % cube 3d
+      %% front face to down left to top right line by line
+      \draw [thick, fill=green]  (0, 0, 3) -- (1, 0, 3) -- (1, 1, 3) -- (0, 1, 3) -- cycle;
+      \draw [thick, fill=green]  (1, 0, 3) -- (2, 0, 3) -- (2, 1, 3) -- (1, 1, 3) -- cycle;
+      \draw [thick, fill=green]  (2, 0, 3) -- (3, 0, 3) -- (3, 1, 3) -- (2, 1, 3) -- cycle;
+      \draw [thick, fill=green]  (0, 1, 3) -- (1, 1, 3) -- (1, 2, 3) -- (0, 2, 3) -- cycle;
+      \draw [thick, fill=red]    (1, 1, 3) -- (2, 1, 3) -- (2, 2, 3) -- (1, 2, 3) -- cycle;
+      \draw [thick, fill=red]    (2, 1, 3) -- (3, 1, 3) -- (3, 2, 3) -- (2, 2, 3) -- cycle;
+      \draw [thick, fill=green]  (0, 2, 3) -- (1, 2, 3) -- (1, 3, 3) -- (0, 3, 3) -- cycle;
+      \draw [thick, fill=red]    (1, 2, 3) -- (2, 2, 3) -- (2, 3, 3) -- (1, 3, 3) -- cycle;
+      \draw [thick, fill=red]    (2, 2, 3) -- (3, 2, 3) -- (3, 3, 3) -- (2, 3, 3) -- cycle;
+      %% right face to down left to top right line by line
+      \draw [thick, fill=yellow] (3, 0, 3) -- (3, 0, 2) -- (3, 1, 2) -- (3, 1, 3) -- cycle;
+      \draw [thick, fill=yellow] (3, 0, 2) -- (3, 0, 1) -- (3, 1, 1) -- (3, 1, 2) -- cycle;
+      \draw [thick, fill=yellow] (3, 0, 1) -- (3, 0, 0) -- (3, 1, 0) -- (3, 1, 1) -- cycle;
+      \draw [thick, fill=green]  (3, 1, 3) -- (3, 1, 2) -- (3, 2, 2) -- (3, 2, 3) -- cycle;
+      \draw [thick, fill=green]  (3, 1, 2) -- (3, 1, 1) -- (3, 2, 1) -- (3, 2, 2) -- cycle;
+      \draw [thick, fill=yellow] (3, 1, 1) -- (3, 1, 0) -- (3, 2, 0) -- (3, 2, 1) -- cycle;
+      \draw [thick, fill=green]  (3, 2, 3) -- (3, 2, 2) -- (3, 3, 2) -- (3, 3, 3) -- cycle;
+      \draw [thick, fill=green]  (3, 2, 2) -- (3, 2, 1) -- (3, 3, 1) -- (3, 3, 2) -- cycle;
+      \draw [thick, fill=yellow] (3, 2, 1) -- (3, 2, 0) -- (3, 3, 0) -- (3, 3, 1) -- cycle;
+      %% up face to down left to top right line by line
+      \draw [thick, fill=red]    (0, 3, 3) -- (1, 3, 3) -- (1, 3, 2) -- (0, 3, 2) -- cycle;
+      \draw [thick, fill=yellow] (1, 3, 3) -- (2, 3, 3) -- (2, 3, 2) -- (1, 3, 2) -- cycle;
+      \draw [thick, fill=yellow] (2, 3, 3) -- (3, 3, 3) -- (3, 3, 2) -- (2, 3, 2) -- cycle;
+      \draw [thick, fill=red]    (0, 3, 2) -- (1, 3, 2) -- (1, 3, 1) -- (0, 3, 1) -- cycle;
+      \draw [thick, fill=yellow] (1, 3, 2) -- (2, 3, 2) -- (2, 3, 1) -- (1, 3, 1) -- cycle;
+      \draw [thick, fill=yellow] (2, 3, 2) -- (3, 3, 2) -- (3, 3, 1) -- (2, 3, 1) -- cycle;
+      \draw [thick, fill=red]    (0, 3, 1) -- (1, 3, 1) -- (1, 3, 0) -- (0, 3, 0) -- cycle;
+      \draw [thick, fill=red]    (1, 3, 1) -- (2, 3, 1) -- (2, 3, 0) -- (1, 3, 0) -- cycle;
+      \draw [thick, fill=red]    (2, 3, 1) -- (3, 3, 1) -- (3, 3, 0) -- (2, 3, 0) -- cycle;
+    \end{scope}
+  \end{tikzpicture}
+  F L F U' R U F2 L2 U' L' B D' B' L2 U
+
+  % Diamant
+  \begin{tikzpicture}[scale=0.5]
+    \rotateRPY{5}{-5}{0}
+    \begin{scope}[RPY]
+      % cube 3d
+      %% front face to down left to top right line by line
+      \draw [thick, fill=green]  (0, 0, 3) -- (1, 0, 3) -- (1, 1, 3) -- (0, 1, 3) -- cycle;
+      \draw [thick, fill=green]  (1, 0, 3) -- (2, 0, 3) -- (2, 1, 3) -- (1, 1, 3) -- cycle;
+      \draw [thick, fill=green]  (2, 0, 3) -- (3, 0, 3) -- (3, 1, 3) -- (2, 1, 3) -- cycle;
+      \draw [thick, fill=green]  (0, 1, 3) -- (1, 1, 3) -- (1, 2, 3) -- (0, 2, 3) -- cycle;
+      \draw [thick, fill=red]    (1, 1, 3) -- (2, 1, 3) -- (2, 2, 3) -- (1, 2, 3) -- cycle;
+      \draw [thick, fill=red]    (2, 1, 3) -- (3, 1, 3) -- (3, 2, 3) -- (2, 2, 3) -- cycle;
+      \draw [thick, fill=green]  (0, 2, 3) -- (1, 2, 3) -- (1, 3, 3) -- (0, 3, 3) -- cycle;
+      \draw [thick, fill=red]    (1, 2, 3) -- (2, 2, 3) -- (2, 3, 3) -- (1, 3, 3) -- cycle;
+      \draw [thick, fill=yellow] (2, 2, 3) -- (3, 2, 3) -- (3, 3, 3) -- (2, 3, 3) -- cycle;
+      %% right face to down left to top right line by line
+      \draw [thick, fill=yellow] (3, 0, 3) -- (3, 0, 2) -- (3, 1, 2) -- (3, 1, 3) -- cycle;
+      \draw [thick, fill=yellow] (3, 0, 2) -- (3, 0, 1) -- (3, 1, 1) -- (3, 1, 2) -- cycle;
+      \draw [thick, fill=yellow] (3, 0, 1) -- (3, 0, 0) -- (3, 1, 0) -- (3, 1, 1) -- cycle;
+      \draw [thick, fill=green]  (3, 1, 3) -- (3, 1, 2) -- (3, 2, 2) -- (3, 2, 3) -- cycle;
+      \draw [thick, fill=green]  (3, 1, 2) -- (3, 1, 1) -- (3, 2, 1) -- (3, 2, 2) -- cycle;
+      \draw [thick, fill=yellow] (3, 1, 1) -- (3, 1, 0) -- (3, 2, 0) -- (3, 2, 1) -- cycle;
+      \draw [thick, fill=red]    (3, 2, 3) -- (3, 2, 2) -- (3, 3, 2) -- (3, 3, 3) -- cycle;
+      \draw [thick, fill=green]  (3, 2, 2) -- (3, 2, 1) -- (3, 3, 1) -- (3, 3, 2) -- cycle;
+      \draw [thick, fill=yellow] (3, 2, 1) -- (3, 2, 0) -- (3, 3, 0) -- (3, 3, 1) -- cycle;
+      %% up face to down left to top right line by line
+      \draw [thick, fill=red]    (0, 3, 3) -- (1, 3, 3) -- (1, 3, 2) -- (0, 3, 2) -- cycle;
+      \draw [thick, fill=yellow] (1, 3, 3) -- (2, 3, 3) -- (2, 3, 2) -- (1, 3, 2) -- cycle;
+      \draw [thick, fill=green]  (2, 3, 3) -- (3, 3, 3) -- (3, 3, 2) -- (2, 3, 2) -- cycle;
+      \draw [thick, fill=red]    (0, 3, 2) -- (1, 3, 2) -- (1, 3, 1) -- (0, 3, 1) -- cycle;
+      \draw [thick, fill=yellow] (1, 3, 2) -- (2, 3, 2) -- (2, 3, 1) -- (1, 3, 1) -- cycle;
+      \draw [thick, fill=yellow] (2, 3, 2) -- (3, 3, 2) -- (3, 3, 1) -- (2, 3, 1) -- cycle;
+      \draw [thick, fill=red]    (0, 3, 1) -- (1, 3, 1) -- (1, 3, 0) -- (0, 3, 0) -- cycle;
+      \draw [thick, fill=red]    (1, 3, 1) -- (2, 3, 1) -- (2, 3, 0) -- (1, 3, 0) -- cycle;
+      \draw [thick, fill=red]    (2, 3, 1) -- (3, 3, 1) -- (3, 3, 0) -- (2, 3, 0) -- cycle;
+    \end{scope}
+  \end{tikzpicture}
+  U' L' U' F' R2 B' R F U B2 U B' L U' F U R F'
+
+  % Twist
+  \begin{tikzpicture}[scale=0.5]
+    \rotateRPY{5}{-5}{0}
+    \begin{scope}[RPY]
+      % cube 3d
+      %% front face to down left to top right line by line
+      \draw [thick, fill=red]    (0, 0, 3) -- (1, 0, 3) -- (1, 1, 3) -- (0, 1, 3) -- cycle;
+      \draw [thick, fill=red]    (1, 0, 3) -- (2, 0, 3) -- (2, 1, 3) -- (1, 1, 3) -- cycle;
+      \draw [thick, fill=red]    (2, 0, 3) -- (3, 0, 3) -- (3, 1, 3) -- (2, 1, 3) -- cycle;
+      \draw [thick, fill=red]    (0, 1, 3) -- (1, 1, 3) -- (1, 2, 3) -- (0, 2, 3) -- cycle;
+      \draw [thick, fill=red]    (1, 1, 3) -- (2, 1, 3) -- (2, 2, 3) -- (1, 2, 3) -- cycle;
+      \draw [thick, fill=green]  (2, 1, 3) -- (3, 1, 3) -- (3, 2, 3) -- (2, 2, 3) -- cycle;
+      \draw [thick, fill=red]    (0, 2, 3) -- (1, 2, 3) -- (1, 3, 3) -- (0, 3, 3) -- cycle;
+      \draw [thick, fill=green]  (1, 2, 3) -- (2, 2, 3) -- (2, 3, 3) -- (1, 3, 3) -- cycle;
+      \draw [thick, fill=green]  (2, 2, 3) -- (3, 2, 3) -- (3, 3, 3) -- (2, 3, 3) -- cycle;
+      %% right face to down left to top right line by line
+      \draw [thick, fill=green]  (3, 0, 3) -- (3, 0, 2) -- (3, 1, 2) -- (3, 1, 3) -- cycle;
+      \draw [thick, fill=green]  (3, 0, 2) -- (3, 0, 1) -- (3, 1, 1) -- (3, 1, 2) -- cycle;
+      \draw [thick, fill=green]  (3, 0, 1) -- (3, 0, 0) -- (3, 1, 0) -- (3, 1, 1) -- cycle;
+      \draw [thick, fill=yellow] (3, 1, 3) -- (3, 1, 2) -- (3, 2, 2) -- (3, 2, 3) -- cycle;
+      \draw [thick, fill=green]  (3, 1, 2) -- (3, 1, 1) -- (3, 2, 1) -- (3, 2, 2) -- cycle;
+      \draw [thick, fill=green]  (3, 1, 1) -- (3, 1, 0) -- (3, 2, 0) -- (3, 2, 1) -- cycle;
+      \draw [thick, fill=yellow] (3, 2, 3) -- (3, 2, 2) -- (3, 3, 2) -- (3, 3, 3) -- cycle;
+      \draw [thick, fill=yellow] (3, 2, 2) -- (3, 2, 1) -- (3, 3, 1) -- (3, 3, 2) -- cycle;
+      \draw [thick, fill=green]  (3, 2, 1) -- (3, 2, 0) -- (3, 3, 0) -- (3, 3, 1) -- cycle;
+      %% up face to down left to top right line by line
+      \draw [thick, fill=yellow] (0, 3, 3) -- (1, 3, 3) -- (1, 3, 2) -- (0, 3, 2) -- cycle;
+      \draw [thick, fill=red]    (1, 3, 3) -- (2, 3, 3) -- (2, 3, 2) -- (1, 3, 2) -- cycle;
+      \draw [thick, fill=red]    (2, 3, 3) -- (3, 3, 3) -- (3, 3, 2) -- (2, 3, 2) -- cycle;
+      \draw [thick, fill=yellow] (0, 3, 2) -- (1, 3, 2) -- (1, 3, 1) -- (0, 3, 1) -- cycle;
+      \draw [thick, fill=yellow] (1, 3, 2) -- (2, 3, 2) -- (2, 3, 1) -- (1, 3, 1) -- cycle;
+      \draw [thick, fill=red]    (2, 3, 2) -- (3, 3, 2) -- (3, 3, 1) -- (2, 3, 1) -- cycle;
+      \draw [thick, fill=yellow] (0, 3, 1) -- (1, 3, 1) -- (1, 3, 0) -- (0, 3, 0) -- cycle;
+      \draw [thick, fill=yellow] (1, 3, 1) -- (2, 3, 1) -- (2, 3, 0) -- (1, 3, 0) -- cycle;
+      \draw [thick, fill=yellow] (2, 3, 1) -- (3, 3, 1) -- (3, 3, 0) -- (2, 3, 0) -- cycle;
+    \end{scope}
+  \end{tikzpicture}
+  F D2 B R B' L' F D' L2 F2 R F' R' F2 L' F
+\section* {3x3x5 C4Y}
+% T
+\begin{tikzpicture}[scale=0.25]
+  % square
+  \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+  % T for all layers
+  \draw [thick, red, <->] (2.5, 0.5) -- (2.5, 2.5);
+  \draw [thick, red, <->] (0.5, 1.5) -- (2.5, 1.5);
+\end{tikzpicture}
+R2 U R2 U' R2 U' D R2 U' R2 U R2 D'
+\newline
+
+% adjacent edge
+\begin{tikzpicture}[scale=0.25]
+  % square
+  \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+  % adjacent edge all layers
+  \draw [thick, red, <->] (1.5, 0.5) -- (2.5, 1.5);
+\end{tikzpicture}
+R2 U R2 U R2 U2 R2 U2 R2 U R2 U' R2
+\newline
+
+% opposite edge
+\begin{tikzpicture}[scale=0.25]
+  % square
+  \draw [thick, black, fill=gray!20] (0, 0) -- (3, 0) -- (3, 3) -- (0, 3) -- cycle;
+  % opposite edge all layers
+  \draw [thick, red, <->] (1.5, 0.5) -- (1.5, 2.5);
+\end{tikzpicture}
+R2 U2 R2 U2 R2
+
+% parity
+\begin{tikzpicture}[scale=0.40]
+  % parity
+  \rotateRPY{5}{-5}{0}
+  \begin{scope}[RPY]
+    % cube 3d
+    %% front face to down left to top right line by line
+    \draw [thick, fill=red]    (0, 0, 6) -- (2, 0, 6) -- (2, 1, 6) -- (0, 1, 6) -- cycle;
+    \draw [thick, fill=red]    (2, 0, 6) -- (4, 0, 6) -- (4, 1, 6) -- (2, 1, 6) -- cycle;
+    \draw [thick, fill=red]    (4, 0, 6) -- (6, 0, 6) -- (6, 1, 6) -- (4, 1, 6) -- cycle;
+    \draw [thick, fill=red]    (0, 1, 6) -- (2, 1, 6) -- (2, 2, 6) -- (0, 2, 6) -- cycle;
+    \draw [thick, fill=red]    (2, 1, 6) -- (4, 1, 6) -- (4, 2, 6) -- (2, 2, 6) -- cycle;
+    \draw [thick, fill=red]    (4, 1, 6) -- (6, 1, 6) -- (6, 2, 6) -- (4, 2, 6) -- cycle;
+    \draw [thick, fill=red]    (0, 2, 6) -- (2, 2, 6) -- (2, 4, 6) -- (0, 4, 6) -- cycle;
+    \draw [thick, fill=red]    (2, 2, 6) -- (4, 2, 6) -- (4, 4, 6) -- (2, 4, 6) -- cycle;
+    \draw [thick, fill=red]    (4, 2, 6) -- (6, 2, 6) -- (6, 4, 6) -- (4, 4, 6) -- cycle;
+    \draw [thick, fill=red]    (0, 4, 6) -- (2, 4, 6) -- (2, 5, 6) -- (0, 5, 6) -- cycle;
+    \draw [thick, fill=red]    (2, 4, 6) -- (4, 4, 6) -- (4, 5, 6) -- (2, 5, 6) -- cycle;
+    \draw [thick, fill=red]    (4, 4, 6) -- (6, 4, 6) -- (6, 5, 6) -- (4, 5, 6) -- cycle;
+    \draw [thick, fill=red]    (0, 5, 6) -- (2, 5, 6) -- (2, 6, 6) -- (0, 6, 6) -- cycle;
+    \draw [thick, fill=red]    (2, 5, 6) -- (4, 5, 6) -- (4, 6, 6) -- (2, 6, 6) -- cycle;
+    \draw [thick, fill=red]    (4, 5, 6) -- (6, 5, 6) -- (6, 6, 6) -- (4, 6, 6) -- cycle;
+    %% right face to down left to top right line by line
+    \draw [thick, fill=green]    (6, 0, 6) -- (6, 0, 4) -- (6, 1, 4) -- (6, 1, 6) -- cycle;
+    \draw [thick, fill=green]    (6, 0, 4) -- (6, 0, 2) -- (6, 1, 2) -- (6, 1, 4) -- cycle;
+    \draw [thick, fill=green]    (6, 0, 2) -- (6, 0, 0) -- (6, 1, 0) -- (6, 1, 2) -- cycle;
+    \draw [thick, fill=blue]     (6, 1, 6) -- (6, 1, 4) -- (6, 2, 4) -- (6, 2, 6) -- cycle;
+    \draw [thick, fill=green]    (6, 1, 4) -- (6, 1, 2) -- (6, 2, 2) -- (6, 2, 4) -- cycle;
+    \draw [thick, fill=green]    (6, 1, 2) -- (6, 1, 0) -- (6, 2, 0) -- (6, 2, 2) -- cycle;
+    \draw [thick, fill=blue]     (6, 2, 6) -- (6, 2, 4) -- (6, 4, 4) -- (6, 4, 6) -- cycle;
+    \draw [thick, fill=green]    (6, 2, 4) -- (6, 2, 2) -- (6, 4, 2) -- (6, 4, 4) -- cycle;
+    \draw [thick, fill=green]    (6, 2, 2) -- (6, 2, 0) -- (6, 4, 0) -- (6, 4, 2) -- cycle;
+    \draw [thick, fill=blue]     (6, 4, 6) -- (6, 4, 4) -- (6, 5, 4) -- (6, 5, 6) -- cycle;
+    \draw [thick, fill=green]    (6, 4, 4) -- (6, 4, 2) -- (6, 5, 2) -- (6, 5, 4) -- cycle;
+    \draw [thick, fill=green]    (6, 4, 2) -- (6, 4, 0) -- (6, 5, 0) -- (6, 5, 2) -- cycle;
+    \draw [thick, fill=green]    (6, 5, 6) -- (6, 5, 4) -- (6, 6, 4) -- (6, 6, 6) -- cycle;
+    \draw [thick, fill=green]    (6, 5, 4) -- (6, 5, 2) -- (6, 6, 2) -- (6, 6, 4) -- cycle;
+    \draw [thick, fill=green]    (6, 5, 2) -- (6, 5, 0) -- (6, 6, 0) -- (6, 6, 2) -- cycle;
+    %% up face to down left to top right line by line
+    \draw [thick, fill=yellow]    (0, 6, 6) -- (2, 6, 6) -- (2, 6, 4) -- (0, 6, 4) -- cycle;
+    \draw [thick, fill=yellow]    (2, 6, 6) -- (4, 6, 6) -- (4, 6, 4) -- (2, 6, 4) -- cycle;
+    \draw [thick, fill=yellow]    (4, 6, 6) -- (6, 6, 6) -- (6, 6, 4) -- (4, 6, 4) -- cycle;
+    \draw [thick, fill=yellow]    (0, 6, 4) -- (2, 6, 4) -- (2, 6, 2) -- (0, 6, 2) -- cycle;
+    \draw [thick, fill=yellow]    (2, 6, 4) -- (4, 6, 4) -- (4, 6, 2) -- (2, 6, 2) -- cycle;
+    \draw [thick, fill=white]     (4, 6, 4) -- (6, 6, 4) -- (6, 6, 2) -- (4, 6, 2) -- cycle;
+    \draw [thick, fill=yellow]    (0, 6, 2) -- (2, 6, 2) -- (2, 6, 0) -- (0, 6, 0) -- cycle;
+    \draw [thick, fill=yellow]    (2, 6, 2) -- (4, 6, 2) -- (4, 6, 0) -- (2, 6, 0) -- cycle;
+    \draw [thick, fill=yellow]    (4, 6, 2) -- (6, 6, 2) -- (6, 6, 0) -- (4, 6, 0) -- cycle;
+  \end{scope}
+\end{tikzpicture}
+U2 R2 F2 U2 u2 F2 R2 U2 F2 (Parity)
+
+\section* {Megaminx}
+%alan et anti-alan
+\subsection* {Spins edge}
+(RL') U' L U2 R' U'2 L' U L U R U' R (trigo direction)
+\newline
+(RL') U R' U'2 L U2 R U R' U' L' U L (time direction)
+
+a
+
+
+
+
+%% front = red, up = yellow, right = green
+%% edge (cuisine julienas face a la fenetre)
+%% jaune, vert = hote ; vert, jaune = tuyau hote
+%% jaune, orange = fenetre ; orange, jaune = volet
+%% jaune, bleu = rail porte salon ouverte ; bleu jaune = porte salon fermee (poignee + bruit)
+%% jaune, rouge = placard cereales ; rouge, jaune = placard torchon
+%% vert, orange = bocaux au dessus evier ; orange, vert = mignonnettes
+%% orange, bleu = tuyaux radiateur ; bleu, orange = le chat en laine
+%% bleu, rouge = porte couloir ferme ; porte couloir ouverte (poignee)
+%% rouge, vert = micro-onde ; vert, rouge ; robot cuisine de merde
+%% blanc, vert = placard casserole ;vert. blanc = placard sac poubelle
+%% blanc, orange = poubelle ; orange, blanc = poubelle tri
+%% blanc, bleu = seuil porte salon (bruit) ; bleu, blanc = prise electrique bancale
+%% blanc, rouge = tiroir bouquin vorwerk ou carnet de sante ; rouge, blanc = pareil
+%%
+%% corner (salon julienas)
+%% jaune, vert, orange = attache rideau
+%% jaune, orange, bleu = placard a provision
+%% jaune, bleu, rouge = spot qui marche
+%% jaune, rouge, vert = petit rayon vert et bois pourri
+%% blanc, orange, vert = placard tortue
+%% blanc, bleu, orange = radiateur volet ouvert
+%% blanc, rouge, bleu = fauteuil + mini radiateur
+%% blanc, vert, rouge = couverture de en moutmout + bas de l'armoire qui couine
+
+
+\end{document}

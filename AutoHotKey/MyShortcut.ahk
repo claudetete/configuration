@@ -46,7 +46,7 @@ SendMode Input  ; Recommended for new scripts due to its superior speed and reli
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 Emacs24Path = D:\Users\ctete\tools\emacs-24.2\bin\
-Emacs23Path = D:\Users\ctete\tools\emacs-23.4\bin\
+Emacs23Path = D:\Users\ctete\tools\emacs-24.3\bin\
 
 ;;; MENU
 Menu, TRAY, Icon, MyShortcut.ico
@@ -385,6 +385,8 @@ StringTypePaste(p_str, p_condensenewlines=1)
   Run, D:/Users/ctete/tools/AutoHotKey/scripts/ClearCaseShortcut.ahk
   ;; time tracking to be easy the weelky/monthly report
   Run, D:/Users/ctete/PM4S/doc/rapport_hebdomadaire/TimeTracking_ctete.xlsx
+  ;; reload this script to overload all shortcut from other scripts
+  Reload
 Return
 ;; (Win+A) run software
 #a::Run, D:/Users/ctete/tools/OperaPortable/OperaPortable.exe
@@ -468,7 +470,7 @@ XButton1::!Left
 XButton2::!Right
 ;; Ctrl+Click
 MButton::^LButton
-!SC001:: ;; azerty ²
+!SC029:: ;; ² or `
   ;; zoom to 84%
   SendInput !nw
   Sleep, 100
@@ -476,19 +478,19 @@ MButton::^LButton
   Sleep, 100
   SendInput {Enter}
 Return
-!SC002:: ;; azerty &
+!SC002:: ;; azerty & or 1
   ;; show/hide comments
   SendInput !ra{Down}{Enter}
 Return
-!SC003:: ;; azerty é
+!SC003:: ;; azerty é or 2
   ;; show/hide all characters
   SendInput ^+_
 Return
-!SC004:: ;; azerty "
+!SC004:: ;; azerty " or 3
   ;; show/hide style pane
   SendInput ^!+s
 Return
-!SC005:: ;; azerty '
+!SC005:: ;; azerty ' or 4
   ;; show/hide tree
   SendInput ^!$
 Return

@@ -19,7 +19,7 @@ cp /cygdrive/d/Users/ctete/tools/AutoHotKey/scripts/WinTransparency.ico ./AutoHo
 cp /cygdrive/d/Users/ctete/tools/AutoHotKey/scripts/WinUnfocusMouseWheel.ahk ./AutoHotKey/WinUnfocusMouseWheel.ahk
 
 # others
-cp /cygdrive/d/Users/ctete/tools/ClavierPlus/Clavier.ini ./ClavierPlus/Clavier.ini
+cp /cygdrive/d/Users/ctete/tools/cube.tex ./cube.tex
 cp /cygdrive/d/Users/ctete/tools/CubicExplorer/settings.xml ./CubicExplorer/settings.xml
 cp /cygdrive/d/Users/ctete/tools/FolderMenu/FolderMenu.xml ./FolderMenu/FolderMenu.xml
 cp /cygdrive/d/Users/ctete/tools/PDF-XChange-Viewer/Settings.dat ./PDF-XChange-Viewer/Settings.dat
