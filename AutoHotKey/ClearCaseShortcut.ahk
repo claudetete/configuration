@@ -17,7 +17,7 @@
 ;;
 
 ;; Author: Claude Tete  <claude.tete@gmail.com>
-;; Version: 1.7
+;; Version: 1.8
 ;; Created: February 2012
 ;; Last-Updated: April 2013
 
@@ -26,9 +26,12 @@
 ;; TODO: cannot get file path from tree version window ?
 
 ;;; Change Log:
+;; 2013-04-18 (1.8)
+;;    add copy to clipboard numero_ECS attribute + fix bug when reload ini with
+;;    title window + add multiple checkout, checkin, etc
 ;; 2013-04-17 (1.7)
 ;;    contextual menu can be disable + add to source control + fix bug with
-;;    ultraedit
+;;    ultraedit + icon in contextual menu + contextual menu place are set in ini
 ;; 2013-04-16 (1.6)
 ;;   remove emacs + add contextual menu + edit config spec
 ;; 2013-02-26 (1.5)
@@ -69,7 +72,7 @@ SetTitleMatchMode, Regex
 ;; name of script
 SoftwareName = ClearCaseShortcut
 ;; version of script
-SoftwareVersion = 1.6
+SoftwareVersion = 1.8
 ;; init for contextual menu
 ContextMenu_OK := False
 
@@ -107,18 +110,13 @@ GoSub, LoadIniFile
 ;
 ;;
 ;;; TITLE GROUP
-GroupAdd, GroupWindowTitle, %ExplorerTitle%
-GroupAdd, GroupWindowTitle, %ClearCaseFindCheckoutTitle%
-GroupAdd, GroupWindowTitle, %ClearCaseHistoryTitle%
-GroupAdd, GroupWindowTitle, %ClearCaseExplorerTitle%
-GroupAdd, GroupWindowTitle, %ClearCaseTreeVersionTitle%
-GroupAdd, GroupWindowTitle, %UltraEditTitle%
+CreateGroupTitle()
 
 ;
 ;;
 ;;; SHORTCUT
 ;; init prefix hotkey and contextual menu
-HotKey, IfWinActive, ahk_group GroupWindowTitle
+HotKey, IfWinActive, ahk_group %GroupWindowTitle%
 Hotkey, %MainShortcut%, CheckShortcut
 if ContextMenuEnable = 1
 {
@@ -229,6 +227,11 @@ CheckShortcut:
   {
     ShowAddToSourceControl(WinName)
   }
+  ;; when GetECSNumberShortcut -> get numero_ECS attribute
+  else if MyKey = %GetECSNumberShortcut%
+  {
+    GetECSNumber(WinName)
+  }
   ;; when VersionPropertiesShortcut -> Version Properties
   else if MyKey = %EditConfigSpecShortcut%
   {
@@ -243,7 +246,7 @@ Return
 RightClickButton:
   if ContextMenuEnable = 1
   {
-    IfWinActive, ahk_group GroupWindowTitle
+    IfWinActive, ahk_group %GroupWindowTitle%
     {
       ;; call contextual menu only after a timer
       SetTimer, ContextMenu, %ContextMenuTime%
@@ -269,7 +272,7 @@ RightClickUpButton:
     ;; disable timer
     SetTimer, ContextMenu, off
 
-    IfWinActive, ahk_group GroupWindowTitle
+    IfWinActive, ahk_group %GroupWindowTitle%
     {
       Send, {RButton Down}{RButton Up}
     }
@@ -303,23 +306,80 @@ ContextMenu:
     ;; set gui only once
     if (!ContextMenu_OK)
     {
-      Menu, Context_, Add, ClearCase Explorer, ShowExplorerMenu
-      Menu, Context_, Add, ; separator
-      Menu, Context_, Add, Find Checkouts, ShowFindCheckoutMenu
-      Menu, Context_, Add, ; separator
-      Menu, Context_, Add, Check Out..., ShowCheckOutMenu
-      Menu, Context_, Add, Check In..., ShowCheckInMenu
-      Menu, Context_, Add, Undo Checkout..., ShowUnCheckOutMenu
-      Menu, Context_, Add, Add to Source Control..., ShowAddToSourceControlMenu
-      Menu, Context_, Add, ; separator
-      Menu, Context_, Add, History, ShowHistoryMenu
-      Menu, Context_, Add, Version Tree, ShowTreeVersionMenu
-      Menu, Context_, Add, Compare with Previous Version, ShowComparePrevMenu
-      Menu, Context_, Add, ; separator
-      Menu, Context_, Add, Properties of Version, ShowVersionPropertiesMenu
-      Menu, Context_, Add, Properties of Element, ShowElementPropertiesMenu
-      Menu, Context_, Add, ; separator
-      Menu, Context_, Add, Edit Config Spec, EditConfigSpecMenu
+      i := 0
+      While (i != ContextMenuMax)
+      {
+        if i = %ContextMenuPlaceExplorer%
+        {
+          Menu, Context_, Add,  ClearCase Explorer, ShowExplorerMenu
+          Menu, Context_, Icon, ClearCase Explorer, clearexplorer.exe, 1
+        }
+        else if i = %ContextMenuPlaceFindCheckout%
+        {
+          Menu, Context_, Add,  Find Checkouts, ShowFindCheckoutMenu
+          Menu, Context_, Icon, Find Checkouts, clearfindco.exe, 1
+        }
+        else if i = %ContextMenuPlaceCheckOut%
+        {
+          Menu, Context_, Add,  Check Out..., ShowCheckOutMenu
+          Menu, Context_, Icon, Check Out..., cccmndlg.dll, 39
+        }
+        else if i = %ContextMenuPlaceCheckIn%
+        {
+          Menu, Context_, Add,  Check In..., ShowCheckInMenu
+          Menu, Context_, Icon, Check In..., cccmndlg.dll, 40
+        }
+        else if i = %ContextMenuPlaceUnCheckOut%
+        {
+          Menu, Context_, Add,  Undo Checkout..., ShowUnCheckOutMenu
+          Menu, Context_, Icon, Undo Checkout..., cccmndlg.dll, 41
+        }
+        else if i = %ContextMenuPlaceAddToSourceControl%
+        {
+          Menu, Context_, Add,  Add to Source Control..., ShowAddToSourceControlMenu
+          Menu, Context_, Icon, Add to Source Control..., cccmndlg.dll, 38
+        }
+        else if i = %ContextMenuPlaceHistory%
+        {
+          Menu, Context_, Add,  History, ShowHistoryMenu
+          Menu, Context_, Icon, History, clearhistory.exe, 1
+        }
+        else if i = %ContextMenuPlaceTreeVersion%
+        {
+          Menu, Context_, Add,  Version Tree, ShowTreeVersionMenu
+          Menu, Context_, Icon, Version Tree, drawtree.ocx, 4
+        }
+        else if i = %ContextMenuPlaceComparePrev%
+        {
+          Menu, Context_, Add,  Compare with Previous Version, ShowComparePrevMenu
+          Menu, Context_, Icon, Compare with Previous Version, cleardiffmrg.exe, 1
+        }
+        else if i = %ContextMenuPlacePropertiesVersion%
+        {
+          Menu, Context_, Add,  Properties of Version, ShowVersionPropertiesMenu
+          Menu, Context_, Icon, Properties of Version, cleardescribe.exe, 1
+        }
+        else if i = %ContextMenuPlacePropertiesElement%
+        {
+          Menu, Context_, Add,  Properties of Element, ShowElementPropertiesMenu
+        }
+        else if i = %ContextMenuPlaceEditConfigSpec%
+        {
+          Menu, Context_, Add,  Edit Config Spec, EditConfigSpecMenu
+          Menu, Context_, Icon, Edit Config Spec, clearvobtool.exe, 1
+        }
+        else if i = %ContextMenuPlaceGetECSNumber%
+        {
+          Menu, Context_, Add,  Copy numero_ECS, GetECSNumberMenu
+;          Menu, Context_, Icon, Copy numero_ECS,
+        }
+        else
+        {
+          Menu, Context_, Add, ; separator
+        }
+
+        i += 1
+      }
 
       ContextMenu_OK := true
     }
@@ -342,19 +402,27 @@ Return
 ;;; get the selected file
 GetExplorerFilePath(WindowName)
 {
-  ControlGetText myCurrentPath, Edit1, %WindowName%
-  file := GetExplorerSelectedFile(WindowName)
-  file := myCurrentPath . "\" . file
+  ;; get the current path
+  dir := GetExplorerDirPath(WindowName)
+  ;; remove ""
+  StringTrimLeft, dir, dir, 1
+  StringTrimRight, dir, dir, 1
+  ;; get list of selected files
+  files := GetExplorerSelectedFile(WindowName)
+  ;; set absolute path
+  files = `"%dir%\%files%
+  StringReplace, files, files, %A_Space%`", %A_Space%`"%dir%\, All
 
-  Return file
+ return files
 }
 
 ;;
 ;;; get the current directory
 GetExplorerDirPath(WindowName)
 {
-  file := GetExplorerFilePath(WindowName)
-  SplitPath, file, , dir
+  ;; get the current path
+  ControlGetText dir, Edit1, %WindowName%
+  dir = "%dir%"
 
   Return dir
 }
@@ -363,31 +431,23 @@ GetExplorerDirPath(WindowName)
 ;;; get the selected file path
 GetExplorerSelectedFile(WindowName)
 {
-   global SoftwareName
+  global SoftwareName
 
-   ;; init filename
-   file = ""
-   ControlGet, selectedFiles, List, Selected Col1, SysListView321, %WindowName%
-   Loop, Parse, selectedFiles, `n  ; Rows are delimited by linefeeds (`n).
-   {
-     If (A_Index = 1)
-     {
-       file := A_LoopField
-     }
-     Else
-     {
-       ; Indicate that several files are selected, we return only the first one
-       ErrorLevel := A_Index
-     }
-   }
+  ;; get list of selected files (sperated by \n)
+  ControlGet, selectedFiles, List, Selected Col1, SysListView321, %WindowName%
+  if StrLen(selectedFiles)
+  {
+    ;; add " at the end
+    selectedFiles = %selectedFiles%`"
+    ;; replace \n by " "
+    StringReplace, selectedFiles, selectedFiles, `n, "%A_Space%", All
+  }
+  else
+  {
+    MsgBox, 0x10, %SoftwareName%: error, Error: You must select a file.
+  }
 
-   if file = ""
-   {
-      MsgBox, 0x10, %SoftwareName%: error, Error: You must select a file.
-      return ""
-   }
-
-   Return file
+  Return selectedFiles
 }
 
 ;
@@ -405,6 +465,8 @@ GetHistoryFile()
   StringReplace, filePath, myTitle, %WinTitle%
   StringTrimLeft, filePath, filePath, 1
 
+  filePath = "%filePath%"
+
   Return filePath
 }
 
@@ -412,8 +474,12 @@ GetHistoryFile()
 ;;; get the dir from history browser
 GetHistoryDir()
 {
-  filePath := GetHistoryFile()
-  SplitPath, filePath, , dirPath
+  files := GetHistoryFile()
+  ;; split with "
+  StringSplit, arrayFiles, files, `", %A_Space%
+  SplitPath, arrayFiles2, , dirPath
+
+  dirPath = "%dirPath%"
 
   Return dirPath
 }
@@ -424,41 +490,50 @@ GetHistoryDir()
 ;===============================================================================
 ;;
 ;;; get the selected file path (surprising it's the same list than MS Explorer)
-GetFinCheckoutsSelectedFile()
+GetFindCheckoutsSelectedFile()
 {
-   global ClearCaseFindCheckoutTitle, SoftwareName
+  global ClearCaseFindCheckoutTitle, SoftwareName
 
-   ;; init filename
-   file = ""
-   ControlGet, selectedFiles, List, Selected Col1, SysListView321, %ClearCaseFindCheckoutTitle%
-   Loop, Parse, selectedFiles, `n  ; Rows are delimited by linefeeds (`n).
-   {
-     If (A_Index = 1)
-     {
-       file := A_LoopField
-     }
-     Else
-     {
-       ; Indicate that several files are selected, we return only the first one
-       ErrorLevel := A_Index
-     }
-   }
+  ;; init filename
+  file = ""
+  ControlGet, selectedFiles, List, Selected Col1, SysListView321, %ClearCaseFindCheckoutTitle%
+  if StrLen(selectedFiles)
+  {
+    ;; add "" at the end
+    selectedFiles = "%selectedFiles%"
+    ;; replace \n by " "
+    StringReplace, selectedFiles, selectedFiles, `n, "%A_Space%", All
+    if (RegexMatch(selectedFiles, "^\.*"))
+    {
+      StringReplace, selectedFiles, selectedFiles, \, /, All
+    }
+  }
+  else
+  {
+    MsgBox, 0x10, %SoftwareName%: error, Error: You must select a file.
+  }
 
-   if file = ""
-   {
-      MsgBox, 0x10, %SoftwareName%: error, Error: You must select a file.
-      return ""
-   }
-
-   Return file
+  Return selectedFiles
 }
 
 ;;
 ;;; get the dir from find checkouts
 GetFindCheckoutsDir()
 {
-  filePath := GetFinCheckoutsSelectedFile()
-  SplitPath, filePath, , dirPath
+  files := GetFindCheckoutsSelectedFile()
+  ;; split with "
+  StringSplit, arrayFiles, files, `", %A_Space%
+  if (RegexMatch(arrayFiles2, "^\.*"))
+  {
+    dirPath =
+  }
+  else
+  {
+    ;; get only the path of the first file
+    SplitPath, arrayFiles2, , dirPath
+
+    dirPath = "%dirPath%"
+  }
 
   Return dirPath
 }
@@ -476,6 +551,8 @@ GetClearCaseExplorerDir()
   WinGetTitle, dirPath, %ClearCaseExplorerTitle%
   dirPath := RegExReplace(dirPath, "^.*\((.*)\).*$", "$1")
 
+  dirPath = "%dirPath%"
+
   Return dirPath
 }
 
@@ -483,42 +560,38 @@ GetClearCaseExplorerDir()
 ;;; get the file from history browser
 GetClearCaseExplorerFile()
 {
-  file := GetClearCaseExplorerSelectedFile()
+  files := GetClearCaseExplorerSelectedFile()
   dir := GetClearCaseExplorerDir()
-  filePath := % dir . "\" . file
+  ;; to remove ""
+  StringTrimLeft, dir, dir, 1
+  StringTrimRight, dir, dir, 1
+  ;; set absolute path
+  files = `"%dir%\%files%
+  StringReplace, files, files, %A_Space%`", %A_Space%`"%dir%\, All
 
-  Return filePath
+  Return files
 }
 
 ;;
 ;;; get the selected file path
 GetClearCaseExplorerSelectedFile()
 {
-   global SoftwareName, ClearCaseExplorerTitle
+  global SoftwareName, ClearCaseExplorerTitle
 
-   ;; init filename
-   file = ""
-   ControlGet, selectedFiles, List, Selected Col1, SysListView322, %ClearCaseExplorerTitle%
-   Loop, Parse, selectedFiles, `n  ; Rows are delimited by linefeeds (`n).
-   {
-     If (A_Index = 1)
-     {
-       file := A_LoopField
-     }
-     Else
-     {
-       ; Indicate that several files are selected, we return only the first one
-       ErrorLevel := A_Index
-     }
-   }
+  ControlGet, selectedFiles, List, Selected Col1, SysListView322, %ClearCaseExplorerTitle%
+  if StrLen(selectedFiles)
+  {
+    ;; add " at the end
+    selectedFiles = %selectedFiles%`"
+    ;; replace \n by " "
+    StringReplace, selectedFiles, selectedFiles, `n, "%A_Space%", All
+  }
+  else
+  {
+    MsgBox, 0x10, %SoftwareName%: error, Error: You must select a file.
+  }
 
-   if file = ""
-   {
-      MsgBox, 0x10, %SoftwareName%: error, Error: You must select a file.
-      return ""
-   }
-
-   Return file
+  Return selectedFiles
 }
 
 ;
@@ -546,6 +619,7 @@ GetUltraEditFile()
     ;; remove *
     StringTrimRight, filePath, filePath, 1
   }
+  filePath = "%filePath%"
 
   Return filePath
 }
@@ -554,8 +628,12 @@ GetUltraEditFile()
 ;;; get the dir from history browser
 GetUltraEditDir()
 {
-  filePath := GetUltraEditFile()
-  SplitPath, filePath, , dirPath
+  files := GetUltraEditFile()
+    ;; split with "
+  StringSplit, arrayFiles, files, `", %A_Space%
+  SplitPath, arrayFiles2, , dirPath
+
+  dirPath = "%dirPath%"
 
   Return dirPath
 }
@@ -688,18 +766,18 @@ ShowCheckOut(WindowName)
 
   if WindowName = %ExplorerTitle%
   {
-    file := GetExplorerFilePath(WindowName)
-    CCCheckout(file)
+    files := GetExplorerFilePath(WindowName)
+    CCCheckout(files)
   }
   else if WindowName = %ClearCaseFindCheckoutTitle%
   {
-    file := GetFinCheckoutsSelectedFile()
-    CCCheckout(file)
+    files := GetFindCheckoutsSelectedFile()
+    CCCheckout(files)
   }
   else if WindowName = %ClearCaseHistoryTitle%
   {
-    file := GetHistoryFile()
-    CCCheckout(file)
+    files := GetHistoryFile()
+    CCCheckout(files)
   }
   else if WindowName = %ClearCaseExplorerTitle%
   {
@@ -714,8 +792,8 @@ ShowCheckOut(WindowName)
   }
   else if WindowName = %UltraEditTitle%
   {
-    file := GetUltraEditFile()
-    CCCheckout(file)
+    files := GetUltraEditFile()
+    CCCheckout(files)
   }
 }
 Return
@@ -737,8 +815,8 @@ ShowCheckIn(WindowName)
 
   if WindowName = %ExplorerTitle%
   {
-    file := GetExplorerFilePath(WindowName)
-    CCCheckin(file)
+    files := GetExplorerFilePath(WindowName)
+    CCCheckin(files)
   }
   else if WindowName = %ClearCaseFindCheckoutTitle%
   {
@@ -746,8 +824,8 @@ ShowCheckIn(WindowName)
   }
   else if WindowName = %ClearCaseHistoryTitle%
   {
-    file := GetHistoryFile()
-    CCCheckin(file)
+    files := GetHistoryFile()
+    CCCheckin(files)
   }
   else if WindowName = %ClearCaseExplorerTitle%
   {
@@ -762,8 +840,8 @@ ShowCheckIn(WindowName)
   }
   else if WindowName = %UltraEditTitle%
   {
-    file := GetUltraEditFile()
-    CCCheckin(file)
+    files := GetUltraEditFile()
+    CCCheckin(files)
   }
 }
 Return
@@ -785,8 +863,8 @@ ShowUnCheckOut(WindowName)
 
   if WindowName = %ExplorerTitle%
   {
-    file := GetExplorerFilePath(WindowName)
-    CCUncheckout(file)
+    files := GetExplorerFilePath(WindowName)
+    CCUncheckout(files)
   }
   else if WindowName = %ClearCaseFindCheckoutTitle%
   {
@@ -794,8 +872,8 @@ ShowUnCheckOut(WindowName)
   }
   else if WindowName = %ClearCaseHistoryTitle%
   {
-    file := GetHistoryFile()
-    CCUncheckout(file)
+    files := GetHistoryFile()
+    CCUncheckout(files)
   }
   else if WindowName = %ClearCaseExplorerTitle%
   {
@@ -810,8 +888,8 @@ ShowUnCheckOut(WindowName)
   }
   else if WindowName = %UltraEditTitle%
   {
-    file := GetUltraEditFile()
-    CCUncheckout(file)
+    files := GetUltraEditFile()
+    CCUncheckout(files)
   }
 }
 Return
@@ -833,8 +911,8 @@ ShowHistory(WindowName)
 
   if WindowName = %ExplorerTitle%
   {
-    file := GetExplorerFilePath(WindowName)
-    CCHistory(file)
+    files := GetExplorerFilePath(WindowName)
+    CCHistory(files)
   }
   else if WindowName = %ClearCaseFindCheckoutTitle%
   {
@@ -842,15 +920,13 @@ ShowHistory(WindowName)
   }
   else if WindowName = %ClearCaseHistoryTitle%
   {
-    file := GetHistoryFile()
-    CCHistory(file)
+    files := GetHistoryFile()
+    CCHistory(files)
   }
   else if WindowName = %ClearCaseExplorerTitle%
   {
-    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
-    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
-    ;; with 0x8017 wParam and 0 lParam (history in menu)
-    PostMessage, 0x111, 32791, 0, , %ClearCaseExplorerTitle%
+    files := GetClearCaseExplorerFile()
+    CCHistory(files)
   }
   else if WindowName = %ClearCaseTreeVersionTitle%
   {
@@ -858,8 +934,8 @@ ShowHistory(WindowName)
   }
   else if WindowName = %UltraEditTitle%
   {
-    file := GetUltraEditFile()
-    CCHistory(file)
+    files := GetUltraEditFile()
+    CCHistory(files)
   }
 }
 Return
@@ -881,8 +957,8 @@ ShowComparePrev(WindowName)
 
   if WindowName = %ExplorerTitle%
   {
-    file := GetExplorerFilePath(WindowName)
-    CCDiff(file)
+    files := GetExplorerFilePath(WindowName)
+    CCDiff(files)
   }
   else if WindowName = %ClearCaseFindCheckoutTitle%
   {
@@ -894,10 +970,8 @@ ShowComparePrev(WindowName)
   }
   else if WindowName = %ClearCaseExplorerTitle%
   {
-    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
-    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
-    ;; with 0x8012 wParam and 0 lParam (compare with previous in menu)
-    PostMessage, 0x111, 32786, 0, , %ClearCaseExplorerTitle%
+    files := GetClearCaseExplorerFile()
+    CCDiff(files)
   }
   else if WindowName = %ClearCaseTreeVersionTitle%
   {
@@ -905,8 +979,8 @@ ShowComparePrev(WindowName)
   }
   else if WindowName = %UltraEditTitle%
   {
-    file := GetUltraEditFile()
-    CCDiff(file)
+    files := GetUltraEditFile()
+    CCDiff(files)
   }
 }
 Return
@@ -928,8 +1002,8 @@ ShowTreeVersion(WindowName)
 
   if WindowName = %ExplorerTitle%
   {
-    file := GetExplorerFilePath(WindowName)
-    CCTreeVersion(file)
+    files := GetExplorerFilePath(WindowName)
+    CCTreeVersion(files)
   }
   else if WindowName = %ClearCaseFindCheckoutTitle%
   {
@@ -941,10 +1015,8 @@ ShowTreeVersion(WindowName)
   }
   else if WindowName = %ClearCaseExplorerTitle%
   {
-    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
-    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
-    ;; with 0x8013 wParam and 0 lParam (version tree in menu)
-    PostMessage, 0x111, 32787, 0, , %ClearCaseExplorerTitle%
+    files := GetClearCaseExplorerFile()
+    CCTreeVersion(files)
   }
   else if WindowName = %ClearCaseTreeVersionTitle%
   {
@@ -953,8 +1025,8 @@ ShowTreeVersion(WindowName)
   }
   else if WindowName = %UltraEditTitle%
   {
-    file := GetUltraEditFile()
-    CCTreeVersion(file)
+    files := GetUltraEditFile()
+    CCTreeVersion(files)
   }
 }
 Return
@@ -1073,25 +1145,23 @@ ShowElementProperties(WindowName)
 
   if WindowName = %ExplorerTitle%
   {
-    file := GetExplorerFilePath(WindowName)
-    CCElementProperties(file)
+    files := GetExplorerFilePath(WindowName)
+    CCElementProperties(files)
   }
   else if WindowName = %ClearCaseFindCheckoutTitle%
   {
-    file := GetFinCheckoutsSelectedFile()
-    CCElementProperties(file)
+    files := GetFindCheckoutsSelectedFile()
+    CCElementProperties(files)
   }
   else if WindowName = %ClearCaseHistoryTitle%
   {
-    file := GetHistoryFile()
-    CCElementProperties(file)
+    files := GetHistoryFile()
+    CCElementProperties(files)
   }
   else if WindowName = %ClearCaseExplorerTitle%
   {
-    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
-    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
-    ;; with 0x8070 wParam and 0 lParam (element properties in menu)
-    PostMessage, 0x111, 32880, 0, , %ClearCaseExplorerTitle%
+    files := GetClearCaseExplorerFile()
+    CCElementProperties(files)
   }
   else if WindowName = %ClearCaseTreeVersionTitle%
   {
@@ -1099,8 +1169,8 @@ ShowElementProperties(WindowName)
   }
   else if WindowName = %UltraEditTitle%
   {
-    file := GetUltraEditFile()
-    CCElementProperties(file)
+    files := GetUltraEditFile()
+    CCElementProperties(files)
   }
 }
 Return
@@ -1122,8 +1192,8 @@ ShowVersionProperties(WindowName)
 
   if WindowName = %ExplorerTitle%
   {
-    file := GetExplorerFilePath(WindowName)
-    CCVersionProperties(file)
+    files := GetExplorerFilePath(WindowName)
+    CCVersionProperties(files)
   }
   else if WindowName = %ClearCaseFindCheckoutTitle%
   {
@@ -1135,10 +1205,8 @@ ShowVersionProperties(WindowName)
   }
   else if WindowName = %ClearCaseExplorerTitle%
   {
-    ;; WinMenuSelectItem cannot be used with clearcase explorer like outlook, etc
-    ;; Send message WM_COMMAND (0x111) to the clearcase explorer window
-    ;; with 0x8071 wParam and 0 lParam (version properties in menu)
-    PostMessage, 0x111, 32881, 0, , %ClearCaseExplorerTitle%
+    files := GetClearCaseExplorerFile()
+    CCVersionProperties(files)
   }
   else if WindowName = %ClearCaseTreeVersionTitle%
   {
@@ -1146,8 +1214,8 @@ ShowVersionProperties(WindowName)
   }
   else if WindowName = %UltraEditTitle%
   {
-    file := GetUltraEditFile()
-    CCVersionProperties(file)
+    files := GetUltraEditFile()
+    CCVersionProperties(files)
   }
 }
 Return
@@ -1170,8 +1238,8 @@ ShowAddToSourceControl(WindowName)
 
   if WindowName = %ExplorerTitle%
   {
-    file := GetExplorerFilePath(WindowName)
-    CCAddToSourceControl(file)
+    files := GetExplorerFilePath(WindowName)
+    CCAddToSourceControl(files)
   }
   else if WindowName = %ClearCaseFindCheckoutTitle%
   {
@@ -1194,8 +1262,56 @@ ShowAddToSourceControl(WindowName)
   }
   else if WindowName = %UltraEditTitle%
   {
-    file := GetUltraEditFile()
-    CCAddToSourceControl(file)
+    files := GetUltraEditFile()
+    CCAddToSourceControl(files)
+  }
+}
+Return
+
+;;
+;;; handler for contextual menu
+GetECSNumberMenu:
+{
+  ;; ContextMenuWindowName set by ContextMenu handler
+  GetECSNumber(ContextMenuWindowName)
+}
+Return
+;;
+;;; Call get numero_ECS attribute
+GetECSNUmber(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global SoftwareName
+
+  if WindowName = %ExplorerTitle%
+  {
+    files := GetExplorerFilePath(WindowName)
+    CCGetECSNumber(files)
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+    files := GetFindCheckoutsSelectedFile()
+    CCGetECSNumber(files)
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    files := GetHistoryFile()
+    CCGetECSNumber(files)
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+    files := GetClearCaseExplorerSelectedFile()
+    CCGetECSNumber(files)
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+    MsgBox, 0x10, %SoftwareName%, Cannot get numero_ECS attributes.
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+    files := GetUltraEditFile()
+    CCGetECSNumber(files)
   }
 }
 Return
@@ -1284,6 +1400,13 @@ GetDirectoryPath(WindowName)
     dirPath := GetUltraEditDir()
   }
 
+  if StrLen(dirPath)
+  {
+    ;; to remove ""
+    StringTrimLeft, dirPath, dirPath, 1
+    StringTrimRight, dirPath, dirPath, 1
+  }
+
   Return dirPath
 }
 
@@ -1293,66 +1416,90 @@ GetDirectoryPath(WindowName)
 ;===============================================================================
 ;;
 ;;; show checkout window about selected file
-CCCheckout(filePath)
+CCCheckout(files)
 {
-  if StrLen(filePath)
+  if StrLen(files)
   {
-    Run, cleardlg.exe /window 5061e /windowmsg A065 /checkout "%filePath%"
+    Run, cleardlg.exe /window 5061e /windowmsg A065 /checkout %files%
   }
 }
 Return
 
 ;;
 ;;; show checkin window about selected file
-CCCheckin(filePath)
+CCCheckin(files)
 {
-  if StrLen(filePath)
+  if StrLen(files)
   {
-    Run, cleardlg.exe /window 606f6 /windowmsg A065 /checkin "%filePath%"
+    Run, cleardlg.exe /window 606f6 /windowmsg A065 /checkin %files%
   }
 }
 Return
 
 ;;
 ;;; show uncheckout window about selected file
-CCUncheckout(filePath)
+CCUncheckout(files)
 {
-  if StrLen(filePath)
+  if StrLen(files)
   {
-    Run, cleardlg.exe /window c04ca /windowmsg A065 /uncheckout "%filePath%"
+    Run, cleardlg.exe /window c04ca /windowmsg A065 /uncheckout %files%
   }
 }
 Return
 
 ;;
 ;;; show history about selected file
-CCHistory(filePath)
+CCHistory(files)
 {
-  if StrLen(filePath)
+  if StrLen(files)
   {
-    Run, clearhistory.exe "%filePath%"
+    ;; split with space
+    StringSplit, arrayFiles, files, %A_Space%
+    ;; browse array
+    Loop %arrayFiles0%
+    {
+      ;; get the file
+      file := arrayFiles%A_Index%
+      Run, clearhistory.exe %file%
+    }
   }
 }
 Return
 
 ;;
 ;;; show diff with previous file about selected file
-CCDiff(filePath)
+CCDiff(files)
 {
-  if StrLen(filePath)
+  if StrLen(files)
   {
-    Run, cleartool.exe diff -graphical -predecessor "%filePath%"
+    ;; split with space
+    StringSplit, arrayFiles, files, %A_Space%
+    ;; browse array
+    Loop %arrayFiles0%
+    {
+      ;; get the file
+      file := arrayFiles%A_Index%
+      Run, cleartool.exe diff -graphical -predecessor %file%
+    }
   }
 }
 Return
 
 ;;
 ;;; show tree version about selected file
-CCTreeVersion(filePath)
+CCTreeVersion(files)
 {
-  if StrLen(filePath)
+  if StrLen(files)
   {
-    Run, clearvtree.exe "%filePath%"
+     ;; split with space
+    StringSplit, arrayFiles, files, %A_Space%
+    ;; browse array
+    Loop %arrayFiles0%
+    {
+      ;; get the file
+      file := arrayFiles%A_Index%
+      Run, clearvtree.exe %file%
+    }
   }
 }
 Return
@@ -1381,33 +1528,99 @@ Return
 
 ;;
 ;;; show element properties about selected file
-CCElementProperties(filePath)
+CCElementProperties(files)
 {
-  if StrLen(filePath)
+  if StrLen(files)
   {
-    Run, cleardescribe.exe "%filePath%@@"
+    ;; split with space
+    StringSplit, arrayFiles, files, %A_Space%
+    ;; browse array
+    Loop %arrayFiles0%
+    {
+      ;; get the file
+      file := arrayFiles%A_Index%
+      ;; to remove " end
+      StringTrimRight, file, file, 1
+      Run, cleardescribe.exe %file%@@`"
+    }
   }
 }
 Return
 
 ;;
 ;;; show version properties about selected file
-CCVersionProperties(filePath)
+CCVersionProperties(files)
 {
-  if StrLen(filePath)
+  if StrLen(files)
   {
-    Run, cleardescribe.exe "%filePath%"
+    ;; split with space
+    StringSplit, arrayFiles, files, %A_Space%
+    ;; browse array
+    Loop %arrayFiles0%
+    {
+      ;; get the file
+      file := arrayFiles%A_Index%
+      Run, cleardescribe.exe %file%
+    }
   }
 }
 Return
 
 ;;
 ;;; show version properties about selected file
-CCAddToSourceControl(filePath)
+CCAddToSourceControl(files)
 {
-  if StrLen(filePath)
+  if StrLen(files)
   {
-    Run, cleardlg.exe /window 30324 /windowmsg A065 /addtosrc "%filePath%"
+    Run, cleardlg.exe /window 30324 /windowmsg A065 /addtosrc %files%
+  }
+}
+Return
+
+;;
+;;; copy to clipboard the ECS number about selected file
+CCGetECSNumber(files)
+{
+  global SoftwareName, SedCommand, GclipCommand
+
+  if StrLen(files)
+  {
+    ;; init ecs number to set in clipboard
+    ecsNumber :=  ""
+    ;; split with "
+    StringSplit, arrayFiles, files, %A_Space%
+    ;; browse array
+    Loop %arrayFiles0%
+    {
+      ;; get the file
+      file := arrayFiles%A_Index%
+      ;; to remove " end
+      StringTrimRight, file, file, 1
+      clipSaved = %Clipboard%
+      ;; get the attribute value between "   |   remove "" with sed   |   send to clipboard
+      RunWait, %comspec% /c "cleartool.exe describe -fmt "`%NS[numero_ECS]a" %file%@@`" | "%SedCommand%" "s/^\"\(.*\)\"$/\1/" | "%GclipCommand%""
+      if Clipboard != %clipSaved%
+      {
+        ;; concat the clipboard result
+        ecsNumber = %ecsNumber%%A_Space%%Clipboard%
+        ;; empty the clipboard
+        Clipboard =
+      }
+    }
+
+    if StrLen(ecsNumber)
+    {
+      ;; set the clipboard with concat ecs number
+      Clipboard = %ecsNumber%
+
+      ;; display successful of copy ECS number
+      TrayTip, %SoftwareName%, numero_ECS attribute `"%ecsNumber%`" to clipboard., 5, 1
+    }
+    else
+    {
+      ;; display error of copy ECS number
+      TrayTip, %SoftwareName%, cannot get numero_ECS attribute., 5, 1
+    }
   }
 }
 Return
@@ -1515,6 +1728,7 @@ All these shortcuts are functional in MS Explorer, CC History Browser, CC Find c
         %MainKey%   %ElementPropertiesShortcut%`t`tProperties of Element `(not working in CC Tree Version`)
         %MainKey%   %VersionPropertiesShortcut%`t`tProperties of Version
         %MainKey%   %AddToSourceControlShortcut%`t`tAdd to Source Control (only on a View-private file)
+        %MainKey%   %GetECSNumberShortcut%`t`tCopy numero_ECS attribute
         %MainKey%   %EditConfigSpecShortcut%`t`tEdit Config Spec `(not working in CC Tree Version`)
 )
   Gui, AboutHelp_:Show, AutoSize, Help %SoftwareName%
@@ -1532,6 +1746,16 @@ Return
 ;;; handler of the item Reload .ini
 MenuReload:
   GoSub, LoadIniFile
+  ;; title group if change
+  CreateGroupTitle()
+
+  if (ContextMenu_OK)
+  {
+    ;; to reload menu
+    ContextMenu_OK := False
+    ;; delete all entry in menu
+    Menu, Context_, DeleteAll
+  }
 Return
 
 
@@ -1564,7 +1788,7 @@ MenuOptions:
 
   labelWidth := 110
   ;; frame with title (w270 = 15 + 110 + 10 + 145 + 15)
-  Gui, Options_:Add, GroupBox, x10 W270 h300, Shortcuts
+  Gui, Options_:Add, GroupBox, x10 W270 h325, Shortcuts
   ;; label for checkout shortcut
   Gui, Options_:Add, Text, xp+15 yp+19 w%labelWidth% Section, CheckOut:
   ;; add a edit area to enter hotkey for checkout shortcut
@@ -1609,6 +1833,10 @@ MenuOptions:
   Gui, Options_:Add, Text, xs w%labelWidth% Section, Add to Source Control:
   ;; add a edit area to enter hotkey for add to source control shortcut
   Gui, Options_:Add, Hotkey, ys-4 vKeyAddToSourceControl, %AddToSourceControlShortcut%
+  ;; label for add to copy numero_ECS attribute shortcut
+  Gui, Options_:Add, Text, xs w%labelWidth% Section, Copy numero_ECS:
+  ;; add a edit area to enter hotkey for add to copy numero_ECS attribute shortcut
+  Gui, Options_:Add, Hotkey, ys-4 vKeyGetECSNumber, %GetECSNumberShortcut%
   ;; label for edit config spec shortcut
   Gui, Options_:Add, Text, xs w%labelWidth% Section, Edit config-spec:
   ;; add a edit area to enter hotkey for edit config spec shortcut
@@ -1647,7 +1875,7 @@ Options_ButtonOK:
   ;; enable/disable contextual menu
   If ContextMenuCheck = 1
   {
-    Hotkey, IfWinActive, ahk_group GroupWindowTitle
+    Hotkey, IfWinActive, ahk_group %GroupWindowTitle%
     ;; enable clearcase shortcut contextual menu
     Hotkey, $RButton, RightClickButton
     Hotkey, $RButton Up, RightClickUpButton
@@ -1656,7 +1884,7 @@ Options_ButtonOK:
   }
   else
   {
-    Hotkey, IfWinActive, ahk_group GroupWindowTitle
+    Hotkey, IfWinActive, ahk_group %GroupWindowTitle%
     ;; disable clearcase shortcut contextual menu
     Hotkey, $RButton, RightClickButton, Off
     Hotkey, $RButton Up, RightClickUpButton, Off
@@ -1673,7 +1901,7 @@ Options_ButtonOK:
     Key = % "#" Key
   }
   ;; unset previous shortcut for window
-  Hotkey, IfWinActive, ahk_group GroupWindowTitle
+  Hotkey, IfWinActive, ahk_group %GroupWindowTitle%
   HotKey, %MainShortcut%, CheckShortcut, Off
   Hotkey, IfWinActive
   ;; when key already exist
@@ -1681,17 +1909,40 @@ Options_ButtonOK:
   If ErrorLevel = 6
   {
     ;; enable new shortcut
-    Hotkey, IfWinActive, ahk_group GroupWindowTitle
+    Hotkey, IfWinActive, ahk_group %GroupWindowTitle%
     HotKey, %Key%, , On
     Hotkey, IfWinActive
   }
   ;; set new shortcut for window
-  Hotkey, IfWinActive, ahk_group GroupWindowTitle
+  Hotkey, IfWinActive, ahk_group %GroupWindowTitle%
   HotKey, %Key%, CheckShortcut
   Hotkey, IfWinActive
   ;; set new shortcut and write in ini file
   MainShortcut = %Key%
   GoSub, MenuCreateSaveIni
+Return
+
+;;
+;;; each time I want to create a group of window, I increment the name of the
+;;; group because ahk cannot delete group
+CreateGroupTitle()
+{
+  global GroupWindowTitle, ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle
+  global ClearCaseExplorerTitle, ClearCaseTreeVersionTitle, UltraEditTitle
+
+  static groupIndex := 1
+
+  ;; increment name
+  GroupWindowTitle := "GroupWindowTitle" groupIndex++
+
+  ;; create group
+  GroupAdd, %GroupWindowTitle%, %ExplorerTitle%
+  GroupAdd, %GroupWindowTitle%, %ClearCaseFindCheckoutTitle%
+  GroupAdd, %GroupWindowTitle%, %ClearCaseHistoryTitle%
+  GroupAdd, %GroupWindowTitle%, %ClearCaseExplorerTitle%
+  GroupAdd, %GroupWindowTitle%, %ClearCaseTreeVersionTitle%
+  GroupAdd, %GroupWindowTitle%, %UltraEditTitle%
+}
 Return
 
 ;
@@ -1714,6 +1965,7 @@ LoadIniFile:
   IniRead, ElementPropertiesShortcut,  %IniFile%, Shortcut, ElementPropertiesShortcut,  p
   IniRead, VersionPropertiesShortcut,  %IniFile%, Shortcut, VersionPropertiesShortcut,  v
   IniRead, AddToSourceControlShortcut, %IniFile%, Shortcut, AddToSourceControlShortcut, a
+  IniRead, GetECSNumberShortcut,       %IniFile%, Shortcut, GetECSNumberShortcut,       n
   IniRead, EditConfigSpecShortcut,     %IniFile%, Shortcut, EditConfigSpecShortcut,     s
   ;;
   ;; window titles
@@ -1724,10 +1976,27 @@ LoadIniFile:
   IniRead, ClearCaseTreeVersionTitle,  %IniFile%, Title, ClearCaseTreeVersionTitle, ahk_exe clearvtree.exe
   IniRead, UltraEditTitle,             %IniFile%, Title, UltraEditTitle, ahk_exe uedit32.exe
   ;; contextual menu
-  IniRead, ContextMenuTime,   %IniFile%, ContextMenu, ContextMenuTime, 300
-  IniRead, ContextMenuEnable, %IniFile%, ContextMenu, ContextMenuEnable, 1
+  IniRead, ContextMenuTime,                    %IniFile%, ContextMenu, ContextMenuTime, 300
+  IniRead, ContextMenuEnable,                  %IniFile%, ContextMenu, ContextMenuEnable, 1
+  IniRead, ContextMenuMax,                     %IniFile%, ContextMenu, ContextMenuMax,                     18
+  IniRead, ContextMenuPlaceExplorer,           %IniFile%, ContextMenu, ContextMenuPlaceExplorer,           0
+  IniRead, ContextMenuPlaceFindCheckout,       %IniFile%, ContextMenu, ContextMenuPlaceFindCheckout,       2
+  IniRead, ContextMenuPlaceCheckOut,           %IniFile%, ContextMenu, ContextMenuPlaceCheckOut,           4
+  IniRead, ContextMenuPlaceCheckIn,            %IniFile%, ContextMenu, ContextMenuPlaceCheckIn,            5
+  IniRead, ContextMenuPlaceUnCheckOut,         %IniFile%, ContextMenu, ContextMenuPlaceUnCheckOut,         6
+  IniRead, ContextMenuPlaceAddToSourceControl, %IniFile%, ContextMenu, ContextMenuPlaceAddToSourceControl, 7
+  IniRead, ContextMenuPlaceHistory,            %IniFile%, ContextMenu, ContextMenuPlaceHistory,            9
+  IniRead, ContextMenuPlaceTreeVersion,        %IniFile%, ContextMenu, ContextMenuPlaceTreeVersion,        10
+  IniRead, ContextMenuPlaceComparePrev,        %IniFile%, ContextMenu, ContextMenuPlaceComparePrev,        11
+  IniRead, ContextMenuPlacePropertiesVersion,  %IniFile%, ContextMenu, ContextMenuPlacePropertiesVersion,  13
+  IniRead, ContextMenuPlacePropertiesElement,  %IniFile%, ContextMenu, ContextMenuPlacePropertiesElement,  14
+  IniRead, ContextMenuPlaceGetECSNumber,       %IniFile%, ContextMenu, ContextMenuPlaceGetECSNumber,       15
+  IniRead, ContextMenuPlaceEditConfigSpec,     %IniFile%, ContextMenu, ContextMenuPlaceEditConfigSpec,     17
   ;; config spec
   IniRead, ConfigSpecFileName, %IniFile%, ConfigSpec, ConfigSpecFileName, clearcaseshortcut-config-spec.cs
+  ;; command
+  IniRead, SedCommand,   %IniFile%, Command, SedCommand, M:\livraison_agl\agl\liv\outils\win32\UnxUtils\sed.exe
+  IniRead, GclipCommand, %IniFile%, Command, GclipCommand, M:\livraison_agl\agl\liv\outils\win32\UnxUtils\gclip.exe
 Return
 
 ;;
@@ -1756,6 +2025,7 @@ MenuCreateSaveIni:
   IniWrite, %ElementPropertiesShortcut%,  %IniFile%, Shortcut, ElementPropertiesShortcut
   IniWrite, %VersionPropertiesShortcut%,  %IniFile%, Shortcut, VersionPropertiesShortcut
   IniWrite, %AddToSourceControlShortcut%, %IniFile%, Shortcut, AddToSourceControlShortcut
+  IniWrite, %GetECSNumberShortcut%,       %IniFile%, Shortcut, GetECSNumberShortcut
   IniWrite, %EditConfigSpecShortcut%,     %IniFile%, Shortcut, EditConfigSpecShortcut
   ;; Section Title
   IniWrite, %ExplorerTitle%,              %IniFile%, Title, ExplorerTitle
@@ -1765,10 +2035,27 @@ MenuCreateSaveIni:
   IniWrite, %ClearCaseTreeVersionTitle%,  %IniFile%, Title, ClearCaseTreeVersionTitle
   IniWrite, %UltraEditTitle%,             %IniFile%, Title, UltraEditTitle
   ;; Section Contextual Menu
-  IniWrite, %ContextMenuTime%,   %IniFile%, ContextMenu, ContextMenuTime
-  IniWrite, %ContextMenuEnable%, %IniFile%, ContextMenu, ContextMenuEnable
+  IniWrite, %ContextMenuTime%,                    %IniFile%, ContextMenu, ContextMenuTime
+  IniWrite, %ContextMenuEnable%,                  %IniFile%, ContextMenu, ContextMenuEnable
+  IniWrite, %ContextMenuMax%,                     %IniFile%, ContextMenu, ContextMenuMax
+  IniWrite, %ContextMenuPlaceExplorer%,           %IniFile%, ContextMenu, ContextMenuPlaceExplorer
+  IniWrite, %ContextMenuPlaceFindCheckout%,       %IniFile%, ContextMenu, ContextMenuPlaceFindCheckout
+  IniWrite, %ContextMenuPlaceCheckOut%,           %IniFile%, ContextMenu, ContextMenuPlaceCheckOut
+  IniWrite, %ContextMenuPlaceCheckIn%,            %IniFile%, ContextMenu, ContextMenuPlaceCheckIn
+  IniWrite, %ContextMenuPlaceUnCheckOut%,         %IniFile%, ContextMenu, ContextMenuPlaceUnCheckOut
+  IniWrite, %ContextMenuPlaceAddToSourceControl%, %IniFile%, ContextMenu, ContextMenuPlaceAddToSourceControl
+  IniWrite, %ContextMenuPlaceHistory%,            %IniFile%, ContextMenu, ContextMenuPlaceHistory
+  IniWrite, %ContextMenuPlaceTreeVersion%,        %IniFile%, ContextMenu, ContextMenuPlaceTreeVersion
+  IniWrite, %ContextMenuPlaceComparePrev%,        %IniFile%, ContextMenu, ContextMenuPlaceComparePrev
+  IniWrite, %ContextMenuPlacePropertiesVersion%,  %IniFile%, ContextMenu, ContextMenuPlacePropertiesVersion
+  IniWrite, %ContextMenuPlacePropertiesElement%,  %IniFile%, ContextMenu, ContextMenuPlacePropertiesElement
+  IniWrite, %ContextMenuPlaceGetECSNumber%,       %IniFile%, ContextMenu, ContextMenuPlaceGetECSNumber
+  IniWrite, %ContextMenuPlaceEditConfigSpec%,     %IniFile%, ContextMenu, ContextMenuPlaceEditConfigSpec
   ;; Section Config Spec
   IniWrite, %ConfigSpecFileName%, %IniFile%, ConfigSpec, ConfigSpecFileName
+  ;; Section Command
+  IniWrite, %SedCommand%,   %IniFile%, Command, SedCommand
+  IniWrite, %GclipCommand%, %IniFile%, Command, GclipCommand
   ;;
   ;; display a traytip to indicate file save
   TrayTip, %SoftwareName%, %IniFile% file saved., 5, 1

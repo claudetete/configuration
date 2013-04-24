@@ -9,6 +9,8 @@
 --nogroup
 
 # add the type of autohotkey
---type-set=ahk=.ahk
-# add the type of rtrt script
---type-set=ptu=.ptu
+--type-set=ahk:ext:ahk
+--type-set=ptu:ext:ptu
+
+# ignore case while there is only lower cases
+--smart-case
