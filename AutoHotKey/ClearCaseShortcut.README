@@ -1,0 +1,55 @@
+ClearCaseShortcut is based on a the tool of AutoHotKey to have some homogeneous
+shortcuts for ClearCase (c) IBM in some application. It will only work in MS
+Explorer, ClearCase History Browser, ClearCase Find checkout, ClearCase
+Explorer, ClearCase Tree Version, UltraEdit and Notepad++. In addition, it
+provide a shortcut (mouse wheel down) to extend the description in version
+properties.
+
+
+INSTALL:
+  1. Copy the file ClearCaseShortcut.exe (or ClearCaseShortcut.ahk to run from
+  source) in the directory of your choice.
+  2. launch the copied file ClearCaseShortcut.exe
+
+
+USE:
+In MS Explorer, ClearCase History Browser, ClearCase Find checkout, ClearCase
+Explorer, ClearCase Tree Version, UltraEdit and Notepad++:
+  Win + C   C           Check Out...
+  Win + C   I           Check In...
+  Win + C   U           Un Checkout...
+  Win + C   H           History
+  Win + C   =           Compare with Previous Version
+  Win + C   T           Version Tree
+  Win + C   E           ClearCase Explorer (not in ClearCase Tree Version)
+  Win + C   F           Find Checkouts (not in ClearCase Tree Version)
+  Win + C   P           Properties of Element (not in ClearCase Tree Version)
+  Win + C   V           Properties of Version
+  Win + C   A           Add to Source Control (only on a View-private file)
+  Win + C   N           Copy numero_ECS attribute
+  Win + C   S           Edit Config Spec (not in ClearCase Tree Version)
+  Win + C   O           Open Version (only in ClearCase History and MS Explorer)
+  Win + C   B           Create Branch label (not in ClearCase Tree Version)
+  Win + C   L           Attach a Label (not in ClearCase Tree Version)
+  Win + C   G           Find Files from a Label (not in ClearCase Tree Version)
+  Win + C   Q           Link Files to ClearQuest (not in ClearCase Tree Version)
+  Long Right Click      Open a menu with all functions
+
+In Version Properties:
+  Mouse wheel down      extend text area of Description
+
+
+SETTING:
+In Options GUI:
+  Change prefix shortcut Win + C and all other shortcuts
+
+
+COMPILE:
+  1. Install AutoHotKey.
+  2. launch: "\PathOfAutoHotKey\Compiler\Ahk2exe.exe /in ClearCaseShortcut.ahk"
+
+
+KNOWN BUGS:
+  Long Right Click menu cannot work with multiple selection.
+  Long Right Click disable right click drag and drop in the compatible
+  application.

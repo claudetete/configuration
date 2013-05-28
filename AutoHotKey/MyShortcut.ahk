@@ -389,7 +389,7 @@ StringTypePaste(p_str, p_condensenewlines=1)
   Reload
 Return
 ;; (Win+A) run software
-#a::Run, D:/Users/ctete/tools/OperaPortable/OperaPortable.exe
+#a::Run, D:/Users/ctete/tools/Opera/opera.exe
 ;; (Win+Q) run calculator
 #q::Run, calc.exe
 ;; (Win+S) run clearcase explorer

@@ -34,8 +34,8 @@
     <CheckBoxSelection>False</CheckBoxSelection>
     <Columns>
       <ControlPanel>0,0,180,0</ControlPanel>
-      <Default>0,0,196,0|1,1,152,0|2,2,120,1|3,3,120,0</Default>
-      <MyComputer>0,0,180,0</MyComputer>
+      <Default>0,0,201,0|1,1,152,0|2,2,120,1|3,3,120,0</Default>
+      <MyComputer>0,0,180,1</MyComputer>
       <Network>0,0,180,0|1,1,96,0|2,2,120,0|3,3,120,0</Network>
     </Columns>
     <FileSizeFormat>0</FileSizeFormat>

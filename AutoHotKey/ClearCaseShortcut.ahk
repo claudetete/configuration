@@ -17,15 +17,27 @@
 ;;
 
 ;; Author: Claude Tete  <claude.tete@gmail.com>
-;; Version: 1.8
+;; Version: 2.2
 ;; Created: February 2012
-;; Last-Updated: April 2013
+;; Last-Updated: May 2013
 
 ;;; Commentary:
 ;;
 ;; TODO: cannot get file path from tree version window ?
 
 ;;; Change Log:
+;; 2013-05-28 (2.2)
+;;    forget to set second shortcut with options GUI
+;; 2013-05-24 (2.1)
+;;    can create a branch, attach a label to a file version, find file attached
+;;    to a label and attach files to a CR clearquest + open version folder if
+;;    not in
+;; 2013-05-06 (2.0)
+;;    can open version file from history browser and ms explorer with default
+;;    application
+;; 2013-04-26 (1.9)
+;;    replace space in multiple file by \n to fix bug with space in path + fix
+;;    multiple file in find checkouts + add notepad++
 ;; 2013-04-18 (1.8)
 ;;    add copy to clipboard numero_ECS attribute + fix bug when reload ini with
 ;;    title window + add multiple checkout, checkin, etc
@@ -35,8 +47,8 @@
 ;; 2013-04-16 (1.6)
 ;;   remove emacs + add contextual menu + edit config spec
 ;; 2013-02-26 (1.5)
-;;   add emacs + use regex for windows explorer title + fix bug when change main
-;;   shortcut
+;;    add emacs + use regex for windows explorer title + fix bug when change main
+;;    shortcut
 ;; 2013-01-11 (1.4)
 ;;    remove clearcase path bin, use PATH variable
 ;; 2013-01-09 (1.3)
@@ -47,9 +59,9 @@
 ;; 2012-12-20 (1.1)
 ;;    coherent shortcuts between different window
 ;; 2012-03-20 (1.0)
-;;     add just one shortcut + resize properties
+;;    add just one shortcut + resize properties
 ;; 2012-02-28 (0.1)
-;;     creation from scratch
+;;    creation from scratch
 
 ;;; Code:
 ;; Recommended for performance and compatibility with future AutoHotkey releases.
@@ -72,7 +84,7 @@ SetTitleMatchMode, Regex
 ;; name of script
 SoftwareName = ClearCaseShortcut
 ;; version of script
-SoftwareVersion = 1.8
+SoftwareVersion = 2.1
 ;; init for contextual menu
 ContextMenu_OK := False
 
@@ -125,6 +137,7 @@ if ContextMenuEnable = 1
   HotKey, $RButton Up, RightClickUpButton
 }
 Hotkey, IfWinActive
+
 
 ;
 ;;
@@ -237,6 +250,31 @@ CheckShortcut:
   {
     ContextMenuWindowName = %WinName%
     GoSub, EditConfigSpecMenu
+  }
+  ;; when OpenVersionShortcut -> Open Version
+  else if MyKey = %OpenVersionShortcut%
+  {
+    OpenVersion(WinName)
+  }
+  ;; when CreateBranchShortcut -> Create Label Branch
+  else if MyKey = %CreateBranchShortcut%
+  {
+    CreateLabelBranch(WinName)
+  }
+  ;; when AttachLabelShortcut -> Attach a Label
+  else if MyKey = %AttachLabelShortcut%
+  {
+    AttachLabel(WinName)
+  }
+  ;; when FindFromLabelShortcut -> Find File from Label
+  else if MyKey = %FindFromLabelShortcut%
+  {
+    FindFromLabel(WinName)
+  }
+  ;; when LinkToClearQuestShortcut -> Link to ClearQuest
+  else if MyKey = %LinkToClearQuestShortcut%
+  {
+    LinkToClearQuest(WinName)
   }
   ;; other characters are not considered
 Return
@@ -373,6 +411,31 @@ ContextMenu:
           Menu, Context_, Add,  Copy numero_ECS, GetECSNumberMenu
 ;          Menu, Context_, Icon, Copy numero_ECS,
         }
+        else if i = %ContextMenuPlaceOpenVersion%
+        {
+          Menu, Context_, Add,  Open Version, OpenVersionMenu
+;          Menu, Context_, Icon, Open Version,
+        }
+        else if i = %ContextMenuPlaceCreateBranch%
+        {
+          Menu, Context_, Add,  Create branch Label, CreateLabelBranchMenu
+          Menu, Context_, Icon, Create branch Label, cccmndlg.dll, 13
+        }
+        else if i = %ContextMenuPlaceAttachLabel%
+        {
+          Menu, Context_, Add,  Attach a Label, AttachLabelMenu
+          Menu, Context_, Icon, Attach a Label, cccmndlg.dll, 6
+        }
+        else if i = %ContextMenuPlaceFindFromLabel%
+        {
+          Menu, Context_, Add,  Find File from Label, FindFromLabelMenu
+          Menu, Context_, Icon, Find File from Label, cccmndlg.dll, 33
+        }
+        else if i = %ContextMenuPlaceLinkToClearQuest%
+        {
+          Menu, Context_, Add,  Link files to ClearQuest, LinkToClearQuestMenu
+;          Menu, Context_, Icon, Link files to ClearQuest, clearquest.exe, 1
+        }
         else
         {
           Menu, Context_, Add, ; separator
@@ -404,14 +467,15 @@ GetExplorerFilePath(WindowName)
 {
   ;; get the current path
   dir := GetExplorerDirPath(WindowName)
-  ;; remove ""
-  StringTrimLeft, dir, dir, 1
-  StringTrimRight, dir, dir, 1
   ;; get list of selected files
   files := GetExplorerSelectedFile(WindowName)
+  ;; remove ""
+  StringTrimLeft, files, files, 1
+  StringTrimLeft, dir, dir, 1
+  StringTrimRight, dir, dir, 1
   ;; set absolute path
   files = `"%dir%\%files%
-  StringReplace, files, files, %A_Space%`", %A_Space%`"%dir%\, All
+  StringReplace, files, files, `n`", `n`"%dir%\, All
 
  return files
 }
@@ -438,9 +502,9 @@ GetExplorerSelectedFile(WindowName)
   if StrLen(selectedFiles)
   {
     ;; add " at the end
-    selectedFiles = %selectedFiles%`"
-    ;; replace \n by " "
-    StringReplace, selectedFiles, selectedFiles, `n, "%A_Space%", All
+    selectedFiles = `"%selectedFiles%`"
+    ;; replace \n by "\n"
+    StringReplace, selectedFiles, selectedFiles, `n, "`n", All
   }
   else
   {
@@ -448,6 +512,42 @@ GetExplorerSelectedFile(WindowName)
   }
 
   Return selectedFiles
+}
+
+;;
+;;; get the file extension
+GetExplorerExtensionFromVersion(WindowName)
+{
+  ;; get file path
+  file := GetExplorerDirPath(WindowName)
+  ;; remove ""
+  StringTrimLeft, file, file, 1
+  StringTrimRight, file, file, 1
+  ;; remove all clearcase version
+  file := RegExReplace(file, "@@.*$")
+  ;; get only extension
+  SplitPath, file, , , fileExtension
+  fileExtension = .%fileExtension%
+
+  Return fileExtension
+}
+
+;;
+;;; set the directory for the current window
+SetDirectoryPath(WindowName, dirPath)
+{
+  ;; disable user inputs
+  BlockInput, On
+  ;; get focus on address bar
+  ControlFocus, Edit1, %WindowName%
+  ;; set new directory path
+  ControlSetText, Edit1, %dirPath%, %WindowName%
+  ;; go to the new path
+  SendInput {Enter}
+  ;; restore focus to file list
+  ControlFocus, SysListView321, %WindowName%
+  ;; enable user inputs
+  BlockInput, Off
 }
 
 ;
@@ -471,17 +571,80 @@ GetHistoryFile()
 }
 
 ;;
+;;; get selected version
+GetHistoryVersion()
+{
+  global ClearCaseHistoryTitle
+
+  ;; get number of column
+  ControlGet, columnNumber, List, Count Col, SysListView321, %ClearCaseHistoryTitle%
+  ;; start from last column
+  While columnNumber > 0
+  {
+    ;; get selected text from column to column
+    ControlGet, selectedVersion, List, Selected Col%columnNumber%, SysListView321, %ClearCaseHistoryTitle%
+    ;; when start with backslash: it is the version column
+    ;; dirty hack because it is very hard to get text from header list
+    if (RegexMatch(selectedVersion, "^\\.*"))
+    {
+      break
+    }
+
+    ;; use the previous column
+    columnNumber--
+  }
+
+  ;; it is the column version
+  if columnNumber != 0
+  {
+    ;; get file path
+    file := GetHistoryFile()
+    ;; remove ""
+    StringTrimLeft, file, file, 1
+    StringTrimRight, file, file, 1
+
+    ;; set full path fore each version
+    selectedVersion = %file%@@%selectedVersion%
+    StringReplace, selectedVersion, selectedVersion, `n, `n%file%@@, All
+  }
+  else
+  {
+    selectedVersion =
+  }
+
+  Return selectedVersion
+}
+Return
+
+;;
 ;;; get the dir from history browser
 GetHistoryDir()
 {
   files := GetHistoryFile()
   ;; split with "
-  StringSplit, arrayFiles, files, `", %A_Space%
+  StringSplit, arrayFiles, files, `", `n
   SplitPath, arrayFiles2, , dirPath
 
   dirPath = "%dirPath%"
 
   Return dirPath
+}
+
+;;
+;;; get file extension from history browser
+GetHistoryFileExtension()
+{
+  ;; get file path
+  file := GetHistoryFile()
+  ;; remove ""
+  StringTrimLeft, file, file, 1
+  StringTrimRight, file, file, 1
+
+  ;; get only extension
+  SplitPath, file, , , fileExtension
+  fileExtension = .%fileExtension%
+
+  Return fileExtension
 }
 
 ;
@@ -499,11 +662,12 @@ GetFindCheckoutsSelectedFile()
   ControlGet, selectedFiles, List, Selected Col1, SysListView321, %ClearCaseFindCheckoutTitle%
   if StrLen(selectedFiles)
   {
-    ;; add "" at the end
+    ;; add ""
     selectedFiles = "%selectedFiles%"
-    ;; replace \n by " "
-    StringReplace, selectedFiles, selectedFiles, `n, "%A_Space%", All
-    if (RegexMatch(selectedFiles, "^\.*"))
+    ;; replace \n by "\n"
+    StringReplace, selectedFiles, selectedFiles, `n, "`n", All
+    ;; when start with a backslash
+    if (RegexMatch(selectedFiles, "^\\.*"))
     {
       StringReplace, selectedFiles, selectedFiles, \, /, All
     }
@@ -522,8 +686,9 @@ GetFindCheckoutsDir()
 {
   files := GetFindCheckoutsSelectedFile()
   ;; split with "
-  StringSplit, arrayFiles, files, `", %A_Space%
-  if (RegexMatch(arrayFiles2, "^\.*"))
+  StringSplit, arrayFiles, files, `", `n
+  ;; when start with a backslash
+  if (RegexMatch(arrayFiles2, "^\\.*"))
   {
     dirPath =
   }
@@ -563,11 +728,12 @@ GetClearCaseExplorerFile()
   files := GetClearCaseExplorerSelectedFile()
   dir := GetClearCaseExplorerDir()
   ;; to remove ""
+  StringTrimLeft, files, files, 1
   StringTrimLeft, dir, dir, 1
   StringTrimRight, dir, dir, 1
   ;; set absolute path
   files = `"%dir%\%files%
-  StringReplace, files, files, %A_Space%`", %A_Space%`"%dir%\, All
+  StringReplace, files, files, `n`", `n`"%dir%\, All
 
   Return files
 }
@@ -582,9 +748,9 @@ GetClearCaseExplorerSelectedFile()
   if StrLen(selectedFiles)
   {
     ;; add " at the end
-    selectedFiles = %selectedFiles%`"
-    ;; replace \n by " "
-    StringReplace, selectedFiles, selectedFiles, `n, "%A_Space%", All
+    selectedFiles = `"%selectedFiles%`"
+    ;; replace \n by "\n"
+    StringReplace, selectedFiles, selectedFiles, `n, "`n", All
   }
   else
   {
@@ -599,7 +765,7 @@ GetClearCaseExplorerSelectedFile()
 ;;; ULTRAEDIT
 ;===============================================================================
 ;;
-;;; get the file from history browser
+;;; get the file from ultraedit
 GetUltraEditFile()
 {
   global UltraEditTitle
@@ -625,13 +791,70 @@ GetUltraEditFile()
 }
 
 ;;
-;;; get the dir from history browser
+;;; get the dir from ultraedit
 GetUltraEditDir()
 {
   files := GetUltraEditFile()
-    ;; split with "
-  StringSplit, arrayFiles, files, `", %A_Space%
-  SplitPath, arrayFiles2, , dirPath
+  ;; remove ""
+  StringTrimLeft, files, files, 1
+  StringTrimRight, files, files, 1
+  SplitPath, files, , dirPath
+
+  dirPath = "%dirPath%"
+
+  Return dirPath
+}
+
+;
+;;
+;;; NOTEPAD++
+;===============================================================================
+;;
+;;; get the file from Notepad++
+GetNotepadPlusPlusFile()
+{
+  global NotepadPlusPlusTitle, SoftwareName
+
+  ;; save clipboard
+  clipSaved = %Clipboard%
+  ;; empty clipboard
+  Clipboard =
+  ;; active the notepad++ window
+  WinActivate, %NotepadPlusPlusTitle%
+  WinWaitActive, %NotepadPlusPlusTitle%
+  ;; send Ctrl+Alt+Shift+c to copy full file path
+  SendInput, {Control Down}{Alt Down}{Shift Down}c{Control Up}{Alt Up}{Shift Up}
+  ;; if something was copied
+  if StrLen(Clipboard)
+  {
+    ;; get file path from clipboard
+    filePath = %Clipboard%
+    ;; restore clipboard
+    Clipboard = %clipSaved%
+  }
+  else
+  {
+    ;; set empty path
+    filePath =
+    ;; show tray tip for error
+    TrayTip, %SoftwareName%, cannot copy full file path.`nSet Control+Alt+Shift+C as shortcut for "Current full file path to Clipboard".
+  }
+
+  filePath = "%filePath%"
+
+  Return filePath
+}
+
+;;
+;;; get the dir from Notepad++
+GetNotepadPlusPlusDir()
+{
+  files := GetNotepadPlusPlusFile()
+  ;; remove ""
+  StringTrimLeft, files, files, 1
+  StringTrimRight, files, files, 1
+  ;; get only the path
+  SplitPath, files, , dirPath
 
   dirPath = "%dirPath%"
 
@@ -762,7 +985,7 @@ Return
 ShowCheckOut(WindowName)
 {
   global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
-  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
 
   if WindowName = %ExplorerTitle%
   {
@@ -795,6 +1018,11 @@ ShowCheckOut(WindowName)
     files := GetUltraEditFile()
     CCCheckout(files)
   }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+    files := GetNotepadPlusPlusFile()
+    CCCheckout(files)
+  }
 }
 Return
 
@@ -811,7 +1039,7 @@ Return
 ShowCheckIn(WindowName)
 {
   global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
-  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
 
   if WindowName = %ExplorerTitle%
   {
@@ -843,6 +1071,11 @@ ShowCheckIn(WindowName)
     files := GetUltraEditFile()
     CCCheckin(files)
   }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+    files := GetNotepadPlusPlusFile()
+    CCCheckin(files)
+  }
 }
 Return
 
@@ -859,7 +1092,7 @@ Return
 ShowUnCheckOut(WindowName)
 {
   global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
-  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
 
   if WindowName = %ExplorerTitle%
   {
@@ -891,6 +1124,11 @@ ShowUnCheckOut(WindowName)
     files := GetUltraEditFile()
     CCUncheckout(files)
   }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+    files := GetNotepadPlusPlusFile()
+    CCUncheckout(files)
+  }
 }
 Return
 
@@ -907,7 +1145,7 @@ Return
 ShowHistory(WindowName)
 {
   global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
-  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
 
   if WindowName = %ExplorerTitle%
   {
@@ -916,7 +1154,8 @@ ShowHistory(WindowName)
   }
   else if WindowName = %ClearCaseFindCheckoutTitle%
   {
-    WinMenuSelectItem, %ClearCaseFindCheckoutTitle%, , Tools, History
+    files := GetFindCheckoutsSelectedFile()
+    CCHistory(files)
   }
   else if WindowName = %ClearCaseHistoryTitle%
   {
@@ -937,6 +1176,11 @@ ShowHistory(WindowName)
     files := GetUltraEditFile()
     CCHistory(files)
   }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+    files := GetNotepadPlusPlusFile()
+    CCHistory(files)
+  }
 }
 Return
 
@@ -953,7 +1197,7 @@ Return
 ShowComparePrev(WindowName)
 {
   global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
-  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
 
   if WindowName = %ExplorerTitle%
   {
@@ -982,6 +1226,11 @@ ShowComparePrev(WindowName)
     files := GetUltraEditFile()
     CCDiff(files)
   }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+    files := GetNotepadPlusPlusFile()
+    CCDiff(files)
+  }
 }
 Return
 
@@ -998,7 +1247,7 @@ Return
 ShowTreeVersion(WindowName)
 {
   global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
-  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
 
   if WindowName = %ExplorerTitle%
   {
@@ -1007,7 +1256,8 @@ ShowTreeVersion(WindowName)
   }
   else if WindowName = %ClearCaseFindCheckoutTitle%
   {
-    WinMenuSelectItem, %ClearCaseFindCheckoutTitle%, , Tools, Version Tree
+    files := GetFindCheckoutsSelectedFile()
+    CCTreeVersion(files)
   }
   else if WindowName = %ClearCaseHistoryTitle%
   {
@@ -1028,6 +1278,11 @@ ShowTreeVersion(WindowName)
     files := GetUltraEditFile()
     CCTreeVersion(files)
   }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+    files := GetNotepadPlusPlusFile()
+    CCTreeVersion(files)
+  }
 }
 Return
 
@@ -1044,7 +1299,7 @@ Return
 ShowExplorer(WindowName)
 {
   global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
-  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
   global SoftwareName
 
   if WindowName = %ExplorerTitle%
@@ -1076,6 +1331,11 @@ ShowExplorer(WindowName)
     dir := GetUltraEditDir()
     CCExplorer(dir)
   }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+    dir := GetNotepadPlusPlusDir()
+    CCExplorer(dir)
+  }
 }
 Return
 
@@ -1092,7 +1352,7 @@ Return
 ShowFindCheckout(WindowName)
 {
   global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
-  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
   global SoftwareName
 
   if WindowName = %ExplorerTitle%
@@ -1124,6 +1384,11 @@ ShowFindCheckout(WindowName)
     dir := GetUltraEditDir()
     CCFindCheckout(dir)
   }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+    dir := GetNotepadPlusPlusDir()
+    CCFindCheckout(dir)
+  }
 }
 Return
 
@@ -1140,7 +1405,7 @@ Return
 ShowElementProperties(WindowName)
 {
   global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
-  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
   global SoftwareName
 
   if WindowName = %ExplorerTitle%
@@ -1172,6 +1437,11 @@ ShowElementProperties(WindowName)
     files := GetUltraEditFile()
     CCElementProperties(files)
   }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+    files := GetNotepadPlusPlusFile()
+    CCElementProperties(files)
+  }
 }
 Return
 
@@ -1188,7 +1458,7 @@ Return
 ShowVersionProperties(WindowName)
 {
   global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
-  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
 
   if WindowName = %ExplorerTitle%
   {
@@ -1197,7 +1467,8 @@ ShowVersionProperties(WindowName)
   }
   else if WindowName = %ClearCaseFindCheckoutTitle%
   {
-    WinMenuSelectItem, %ClearCaseFindCheckoutTitle%, , Tools, Properties
+    files := GetFindCheckoutsSelectedFile()
+    CCVersionProperties(files)
   }
   else if WindowName = %ClearCaseHistoryTitle%
   {
@@ -1217,6 +1488,11 @@ ShowVersionProperties(WindowName)
     files := GetUltraEditFile()
     CCVersionProperties(files)
   }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+    files := GetNotepadPlusPlusFile()
+    CCVersionProperties(files)
+  }
 }
 Return
 
@@ -1233,7 +1509,7 @@ Return
 ShowAddToSourceControl(WindowName)
 {
   global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
-  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
   global SoftwareName
 
   if WindowName = %ExplorerTitle%
@@ -1265,6 +1541,11 @@ ShowAddToSourceControl(WindowName)
     files := GetUltraEditFile()
     CCAddToSourceControl(files)
   }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+    files := GetNotepadPlusPlusFile()
+    CCAddToSourceControl(files)
+  }
 }
 Return
 
@@ -1281,7 +1562,7 @@ Return
 GetECSNUmber(WindowName)
 {
   global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
-  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
   global SoftwareName
 
   if WindowName = %ExplorerTitle%
@@ -1301,7 +1582,7 @@ GetECSNUmber(WindowName)
   }
   else if WindowName = %ClearCaseExplorerTitle%
   {
-    files := GetClearCaseExplorerSelectedFile()
+    files := GetClearCaseExplorerFile()
     CCGetECSNumber(files)
   }
   else if WindowName = %ClearCaseTreeVersionTitle%
@@ -1312,6 +1593,285 @@ GetECSNUmber(WindowName)
   {
     files := GetUltraEditFile()
     CCGetECSNumber(files)
+  }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+    files := GetNotepadPlusPlusFile()
+    CCGetECSNumber(files)
+  }
+}
+Return
+
+
+;;
+;;; handler for contextual menu
+OpenVersionMenu:
+{
+  ;; ContextMenuWindowName set by ContextMenu handler
+  OpenVersion(ContextMenuWindowName)
+}
+Return
+;;
+;;; Open version with default application
+OpenVersion(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
+  global SoftwareName
+
+  if WindowName = %ExplorerTitle%
+  {
+    versions := GetExplorerFilePath(WindowName)
+    ;; when the current folder is not a version folder: go in
+    ifNotInString, versions, @@
+    {
+      ;; split with new line
+      StringSplit, arrayFiles, versions, `n
+      ;; remove ""
+      StringTrimLeft, dir, arrayFiles1, 1
+      StringTrimRight, dir, dir, 1
+      ;; concat first file with @@\main
+      dir = %dir%@@\main
+      SetDirectoryPath(WindowName, dir)
+    }
+    else
+    {
+      ext := GetExplorerExtensionFromVersion(WindowName)
+      OpenFileFromExtension(versions, ext)
+    }
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    versions := GetHistoryVersion()
+    ext := GetHistoryFileExtension()
+    OpenFileFromExtension(versions, ext)
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+  }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+  }
+}
+Return
+
+;;
+;;; handler for contextual menu
+CreateLabelBranchMenu:
+{
+  ;; ContextMenuWindowName set by ContextMenu handler
+  CreateLabelBranch(ContextMenuWindowName)
+}
+Return
+;;
+;;; Call create branch label
+CreateLabelBranch(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
+  global SoftwareName, CurrentDir
+
+  if WindowName = %ExplorerTitle%
+  {
+    CurrentDir := GetExplorerDirPath(WindowName)
+    GoSub, ShowCreateBranch
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+    CurrentDir := GetFindCheckoutsDir()
+    GoSub, ShowCreateBranch
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    CurrentDir := GetHistoryDir()
+    GoSub, ShowCreateBranch
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+    CurrentDir := GetClearCaseExplorerDir()
+    GoSub, ShowCreateBranch
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+    MsgBox, 0x10, %SoftwareName%, Cannot create a branch label from Tree Version.
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+    CurrentDir := GetUltraEditDir()
+    GoSub, ShowCreateBranch
+  }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+    CurrentDir := GetNotepadPlusPlusDir()
+    GoSub, ShowCreateBranch
+  }
+}
+Return
+
+;;
+;;; handler for contextual menu
+AttachLabelMenu:
+{
+  ;; ContextMenuWindowName set by ContextMenu handler
+  AttachLabel(ContextMenuWindowName)
+}
+Return
+;;
+;;; Call attach files to a label
+AttachLabel(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
+  global SoftwareName, CurrentFiles
+
+  if WindowName = %ExplorerTitle%
+  {
+    CurrentFiles := GetExplorerFilePath(WindowName)
+    GoSub, ShowAttachLabel
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+    CurrentFiles := GetFindCheckoutsSelectedFile()
+    GoSub, ShowAttachLabel
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    CurrentFiles := GetHistoryFile()
+    GoSub, ShowAttachLabel
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+    CurrentFiles := GetClearCaseExplorerFile()
+    GoSub, ShowAttachLabel
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+    WinMenuSelectItem, %ClearCaseTreeVersionTitle%, , Tools, Apply Label...
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+    CurrentFiles := GetUltraEditFile()
+    GoSub, ShowAttachLabel
+  }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+    CurrentFiles := GetNotepadPlusPlusFile()
+    GoSub, ShowAttachLabel
+  }
+}
+Return
+
+;;
+;;; handler for contextual menu
+FindFromLabelMenu:
+{
+  ;; ContextMenuWindowName set by ContextMenu handler
+  FindFromLabel(ContextMenuWindowName)
+}
+Return
+;;
+;;; Call find files from a label
+FindFromLabel(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
+  global SoftwareName, CurrentDir
+
+  if WindowName = %ExplorerTitle%
+  {
+    CurrentDir := GetExplorerDirPath(WindowName)
+    GoSub, ShowFindFromLabel
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+    CurrentDir := GetFindCheckoutsDir()
+    GoSub, ShowFindFromLabel
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    CurrentDir := GetHistoryDir()
+    GoSub, ShowFindFromLabel
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+    CurrentDir := GetClearCaseExplorerDir()
+    GoSub, ShowFindFromLabel
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+    MsgBox, 0x10, %SoftwareName%, Cannot set label from Tree Version.
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+    CurrentDir := GetUltraEditDir()
+    GoSub, ShowFindFromLabel
+  }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+    CurrentDir := GetNotepadPlusPlusDir()
+    GoSub, ShowFindFromLabel
+  }
+}
+Return
+
+;;
+;;; handler for contextual menu
+LinkToClearQuestMenu:
+{
+  ;; ContextMenuWindowName set by ContextMenu handler
+  LinkToClearQuest(ContextMenuWindowName)
+}
+Return
+;;
+;;; Call link files to a clearquest CR
+LinkToClearQuest(WindowName)
+{
+  global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
+  global SoftwareName
+
+  if WindowName = %ExplorerTitle%
+  {
+    files := GetExplorerFilePath(WindowName)
+    CCLinkToClearQuest(files)
+  }
+  else if WindowName = %ClearCaseFindCheckoutTitle%
+  {
+    files := GetFindCheckoutsSelectedFile()
+    CCLinkToClearQuest(files)
+  }
+  else if WindowName = %ClearCaseHistoryTitle%
+  {
+    files := GetHistoryFile()
+    CCLinkToClearQuest(files)
+  }
+  else if WindowName = %ClearCaseExplorerTitle%
+  {
+    files := GetClearCaseExplorerFile()
+    CCLinkToClearQuest(files)
+  }
+  else if WindowName = %ClearCaseTreeVersionTitle%
+  {
+    MsgBox, 0x10, %SoftwareName%, Cannot link to ClearQuest from Tree Version.
+  }
+  else if WindowName = %UltraEditTitle%
+  {
+    files := GetUltraEditFile()
+    CCLinkToClearQuest(files)
+  }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+    files := GetNotepadPlusPlusFile()
+    CCLinkToClearQuest(files)
   }
 }
 Return
@@ -1331,7 +1891,7 @@ EditConfigSpecMenu:
 GetActiveWindowName()
 {
   global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
-  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
 
   ;; detect active window
   ifWinActive, %ExplorerTitle%
@@ -1358,6 +1918,10 @@ GetActiveWindowName()
   {
     WindowName = %UltraEditTitle%
   }
+  else ifWinActive, %NotepadPlusPlusTitle%
+  {
+    WindowName = %NotepadPlusPlusTitle%
+  }
   else
   {
     WindowName = ""
@@ -1371,7 +1935,7 @@ GetActiveWindowName()
 GetDirectoryPath(WindowName)
 {
   global ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle, ClearCaseExplorerTitle
-  global ClearCaseTreeVersionTitle, UltraEditTitle
+  global ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
   global SoftwareName
 
   if WindowName = %ExplorerTitle%
@@ -1399,6 +1963,10 @@ GetDirectoryPath(WindowName)
   {
     dirPath := GetUltraEditDir()
   }
+  else if WindowName = %NotepadPlusPlusTitle%
+  {
+    dirPath := GetNotepadPlusPlusDir()
+  }
 
   if StrLen(dirPath)
   {
@@ -1420,6 +1988,7 @@ CCCheckout(files)
 {
   if StrLen(files)
   {
+    StringReplace, files, files, `n, %A_Space%, All
     Run, cleardlg.exe /window 5061e /windowmsg A065 /checkout %files%
   }
 }
@@ -1431,6 +2000,7 @@ CCCheckin(files)
 {
   if StrLen(files)
   {
+    StringReplace, files, files, `n, %A_Space%, All
     Run, cleardlg.exe /window 606f6 /windowmsg A065 /checkin %files%
   }
 }
@@ -1442,6 +2012,7 @@ CCUncheckout(files)
 {
   if StrLen(files)
   {
+    StringReplace, files, files, `n, %A_Space%, All
     Run, cleardlg.exe /window c04ca /windowmsg A065 /uncheckout %files%
   }
 }
@@ -1453,8 +2024,8 @@ CCHistory(files)
 {
   if StrLen(files)
   {
-    ;; split with space
-    StringSplit, arrayFiles, files, %A_Space%
+    ;; split with new line
+    StringSplit, arrayFiles, files, `n
     ;; browse array
     Loop %arrayFiles0%
     {
@@ -1472,8 +2043,8 @@ CCDiff(files)
 {
   if StrLen(files)
   {
-    ;; split with space
-    StringSplit, arrayFiles, files, %A_Space%
+    ;; split with new line
+    StringSplit, arrayFiles, files, `n
     ;; browse array
     Loop %arrayFiles0%
     {
@@ -1491,8 +2062,8 @@ CCTreeVersion(files)
 {
   if StrLen(files)
   {
-     ;; split with space
-    StringSplit, arrayFiles, files, %A_Space%
+     ;; split with new line
+    StringSplit, arrayFiles, files, `n
     ;; browse array
     Loop %arrayFiles0%
     {
@@ -1510,7 +2081,7 @@ CCExplorer(dirPath)
 {
   if StrLen(dirPath)
   {
-    Run, clearexplorer.exe "%dirPath%"
+    Run, clearexplorer.exe %dirPath%
   }
 }
 Return
@@ -1521,7 +2092,7 @@ CCFindCheckout(dirPath)
 {
   if StrLen(dirPath)
   {
-    Run, clearfindco.exe "%dirPath%"
+    Run, clearfindco.exe %dirPath%
   }
 }
 Return
@@ -1532,8 +2103,8 @@ CCElementProperties(files)
 {
   if StrLen(files)
   {
-    ;; split with space
-    StringSplit, arrayFiles, files, %A_Space%
+    ;; split with new line
+    StringSplit, arrayFiles, files, `n
     ;; browse array
     Loop %arrayFiles0%
     {
@@ -1553,8 +2124,8 @@ CCVersionProperties(files)
 {
   if StrLen(files)
   {
-    ;; split with space
-    StringSplit, arrayFiles, files, %A_Space%
+    ;; split with new line
+    StringSplit, arrayFiles, files, `n
     ;; browse array
     Loop %arrayFiles0%
     {
@@ -1572,6 +2143,7 @@ CCAddToSourceControl(files)
 {
   if StrLen(files)
   {
+    StringReplace, files, files, `n, %A_Space%, All
     Run, cleardlg.exe /window 30324 /windowmsg A065 /addtosrc %files%
   }
 }
@@ -1588,7 +2160,7 @@ CCGetECSNumber(files)
     ;; init ecs number to set in clipboard
     ecsNumber :=  ""
     ;; split with "
-    StringSplit, arrayFiles, files, %A_Space%
+    StringSplit, arrayFiles, files, `n
     ;; browse array
     Loop %arrayFiles0%
     {
@@ -1626,10 +2198,105 @@ CCGetECSNumber(files)
 Return
 
 ;;
+;;; create branch label in the current vob
+CCCreateLabelBranch(dirPath, comment, labelBranch)
+{
+  global SoftwareName
+
+  if StrLen(dirPath)
+  {
+    if StrLen(comment)
+    {
+      Run, cd %dirPath% && cleartool.exe mkbrtype -comment "%comment%" %labelBranch%
+    }
+    else
+    {
+      Run, cd %dirPath% && cleartool.exe mkbrtype -ncomment %labelBranch%
+    }
+  }
+}
+Return
+
+;;
+;;; attach a label to selected files
+CCAttachLabel(files, myLabel)
+{
+  global SoftwareName
+
+  if StrLen(files)
+  {
+    if StrLen(myLabel)
+    {
+      StringReplace, files, files, `n, %A_Space%, All
+      Run, cleartool.exe mklabel -ncomment %myLabel% %files%
+    }
+    else
+    {
+      MsgBox, 0x10, %SoftwareName%, Cannot attach to an empty Label.
+    }
+  }
+}
+Return
+
+;;
+;;; find files from a label
+CCFindFromLabel(dirPath, myLabel, allVOB)
+{
+  global SoftwareName
+
+  if StrLen(dirPath)
+  {
+    if StrLen(myLabel)
+    {
+      if allVOB = 1
+      {
+        allVOB = -avobs
+      }
+      else
+      {
+        allVOB := " "
+      }
+
+      Run, cd %dirPath% && cleartool.exe find . -type f %allVOB% -version "lbtype(%myLabel%)" -print > %myLabel%_filelist.txt
+    }
+    else
+    {
+      MsgBox, 0x10, %SoftwareName%, Cannot search with an empty Label.
+    }
+  }
+}
+Return
+
+;;
+;;; link files to a clearquest CR
+CCLinkToClearQuest(files)
+{
+  global SoftwareName
+
+  if StrLen(files)
+  {
+    ;; split with new line
+    StringSplit, arrayFiles, files, `n
+    ;; browse array
+    Loop %arrayFiles0%
+    {
+      ;; get the file
+      file := arrayFiles%A_Index%
+      Run, cleartool.exe chevent -ncomment %file%
+    }
+  }
+  else
+  {
+    MsgBox, 0x10, %SoftwareName%, No file is selected.
+  }
+}
+Return
+
+;;
 ;;; get config-spec and edit it
 CCEditConfigSpec(dirPath)
 {
-  global ConfigSpecEditorCommand, ConfigSpecFileName, SoftwareName
+  global ConfigSpecEditorSingleInstance, ConfigSpecFileName, ConfigSpecTimeOut, SoftwareName
 
   if StrLen(dirPath)
   {
@@ -1653,44 +2320,118 @@ CCEditConfigSpec(dirPath)
     }
     ;; can detect hidden window
     DetectHiddenWindows, On
-    ;; wait editor
-    WinWait, ahk_pid %editorPID%
+    if ConfigSpecEditorSingleInstance = 0
+    {
+      ;; wait editor
+      WinWait, ahk_pid %editorPID%
+    }
 
     ;; init loop
     ;; get the file time of modification of file (for reference)
     FileGetTime, CurrentDate, %fileName%, M
     FileTime = %CurrentDate%
-    ;; while the modification time reference is the same as the current
-    ;; modification time
-    While (FileTime = CurrentDate)
+    editing := True
+    While (editing)
     {
-      ;; get modification time of temporary file
-      FileGetTime, FileTime, %fileName%, M
-      ;; when editor is not running
-      IfWinNotExist, ahk_pid %editorPID%
+      timeOut := 0
+      ;; while the modification time reference is the same as the current
+      ;; modification time
+      While (FileTime = CurrentDate)
       {
-        ;; display tray tip to indicate of no change of config spec
-        TrayTip, %SoftwareName%, config-spec has not changed., 5, 1
-        break
+        ;; get modification time of temporary file
+        FileGetTime, FileTime, %fileName%, M
+        if ConfigSpecEditorSingleInstance = 0
+        {
+          ;; when editor is not running
+          IfWinNotExist, ahk_pid %editorPID%
+          {
+            ;; display tray tip to indicate of no change of config spec
+            TrayTip, %SoftwareName%, config-spec has not changed., 5, 1
+            editing := False
+            break
+          }
+        }
+        else
+        {
+          ;; ConfigSpecTimeOut is in second and timeout in ms
+          if ((timeOut / 1000) >= ConfigSpecTimeOut)
+          {
+            break
+          }
+          else
+          {
+             timeOut += 100
+          }
+        }
+        ;; wait 100ms (pooling)
+        Sleep, 100
       }
-      ;; wait 100ms (pooling)
-      Sleep, 100
-    }
 
+
+      if ((timeOut / 1000) >= ConfigSpecTimeOut)
+      {
+        MsgBox, 4, , Have you finished to edit config spec ?
+        IfMsgBox Yes
+        {
+          editing := False
+        }
+        else
+        {
+          editing := True
+        }
+      }
+      else
+      {
+        if (FileTime != CurrentDate)
+        {
+          ;; get config spec
+          RunWait, %comspec% /c "cd %dirPath% && cleartool.exe setcs %ConfigSpecFileName%", %dirPath%
+          ;; display tray tip to indicate setting of config spec
+          TrayTip, %SoftwareName%, setting config-spec done., 5, 1
+        }
+        editing := False
+      }
+    }
     ;; cannot detect hidden window
     DetectHiddenWindows, Off
-
-    if (FileTime != CurrentDate)
-    {
-      ;; get config spec
-      RunWait, %comspec% /c "cd %dirPath% && cleartool.exe setcs %ConfigSpecFileName%", %dirPath%
-      ;; display tray tip to indicate setting of config spec
-      TrayTip, %SoftwareName%, setting config-spec done., 5, 1
-    }
     ;; to be sure it is not used after wait clearcase setcs
     sleep, 100
     ;; delete temp file
     FileDelete, %fileName%
+  }
+}
+Return
+
+;;
+;;; open file with extension default program
+OpenFileFromExtension(files, ext)
+{
+  global SoftwareName
+
+  ;; get default program
+  RegRead, prog, HKEY_CLASSES_ROOT, %ext%
+  ;; get default program command
+  prog = %prog%\shell\open\command
+  RegRead, progCommand, HKEY_CLASSES_ROOT, %prog%
+
+  ;; split with new line
+  StringSplit, arrayFiles, files, `n
+  ;; browse array of line
+  Loop %arrayFiles0%
+  {
+    file := arrayFiles%A_Index%
+
+    if StrLen(progCommand)
+    {
+      ;; replace %1 by the file
+      StringReplace, command, progCommand, `%1, %file%
+      Run, %command%
+    }
+    else
+    {
+      ;; when no default program
+      MsgBox, 0x10, %SoftwareName%, No default program.
+    }
   }
 }
 Return
@@ -1722,7 +2463,7 @@ All these shortcuts are functional in MS Explorer, CC History Browser, CC Find c
         %MainKey%   %UnCheckOutShortcut%`t`tUn Checkout...
         %MainKey%   %HistoryShortcut%`t`tHistory
         %MainKey%   %ComparePrevShortcut%`t`tCompare with Previous Version
-        %MainKey%   %TreeVersionShortcut%`t`Version Tree
+        %MainKey%   %TreeVersionShortcut%`t`tVersion Tree
         %MainKey%   %ExplorerShortcut%`t`tClearCase Explorer `(not working in CC Tree Version`)
         %MainKey%   %FindCheckoutShortcut%`t`tFind Checkouts `(not working in CC Tree Version`)
         %MainKey%   %ElementPropertiesShortcut%`t`tProperties of Element `(not working in CC Tree Version`)
@@ -1730,6 +2471,11 @@ All these shortcuts are functional in MS Explorer, CC History Browser, CC Find c
         %MainKey%   %AddToSourceControlShortcut%`t`tAdd to Source Control (only on a View-private file)
         %MainKey%   %GetECSNumberShortcut%`t`tCopy numero_ECS attribute
         %MainKey%   %EditConfigSpecShortcut%`t`tEdit Config Spec `(not working in CC Tree Version`)
+        %MainKey%   %OpenVersionShortcut%`t`tOpen Version `(only in CC History and MS Explorer`)
+        %MainKey%   %CreateBranchShortcut%`t`tCreate Branch label `(not working in CC Tree Version`)
+        %MainKey%   %AttachLabelShortcut%`t`tAttach a Label `(not working in CC Tree Version`)
+        %MainKey%   %FindFromLabelShortcut%`t`tFind Files from a Label `(not working in CC Tree Version`)
+        %MainKey%   %LinkToClearQuestShortcut%`t`tLink Files to ClearQuest `(not working in CC Tree Version`)
 )
   Gui, AboutHelp_:Show, AutoSize, Help %SoftwareName%
 Return
@@ -1758,6 +2504,96 @@ MenuReload:
   }
 Return
 
+;
+;;
+;;; BRANCH GUI
+ShowCreateBranch:
+  Gui, Branch_:Add, Text, Section, Branch label:
+  Gui, Branch_:Add, Edit, ys-4 r1 w200 vMyBranchLabel Limit
+  Gui, Branch_:Add, Text, xs Section, Comment:
+  Gui, Branch_:Add, Edit, ys-4 r1 w400 vMyBranchComment Limit
+
+  Gui, Branch_:Add, Button, x70 w70 xs Section, OK
+  Gui, Branch_:Add, Button, w70 ys, Cancel
+  Gui, Branch_:Show, AutoSize, Create a Branch label (Escape to cancel)
+Return
+
+;;
+;;: handler for the create branch window
+Branch_GuiClose:
+Branch_GuiEscape:
+Branch_ButtonCancel:
+  ;; destroy the window without saving anything
+  Gui, Destroy
+Return
+
+;;
+;;; handler for the OK button of branch window
+Branch_ButtonOK:
+  Gui, Submit
+  ;; CurrentDir is set before call gui
+  CCCreateLabelBranch(CurrentDir, MyBranchComment, MyBranchLabel)
+Return
+
+;
+;;
+;;; ATTACH LABEL GUI
+ShowAttachLabel:
+  Gui, AttachLabel_:Add, Text, Section, Label:
+  Gui, AttachLabel_:Add, Edit, ys-4 r1 w300 vMyAttachLabel Limit
+
+  Gui, AttachLabel_:Add, Button, x70 w70 xs Section, OK
+  Gui, AttachLabel_:Add, Button, w70 ys, Cancel
+  Gui, AttachLabel_:Show, AutoSize, Attach a Label (Escape to cancel)
+Return
+
+;;
+;;: handler for the attach label window
+AttachLabel_GuiClose:
+AttachLabel_GuiEscape:
+AttachLabel_ButtonCancel:
+  ;; destroy the window without saving anything
+  Gui, Destroy
+Return
+
+;;
+;;; handler for the OK button of attach label window
+AttachLabel_ButtonOK:
+  Gui, Submit
+  ;; CurrentFiles is set before call gui
+  CCAttachLabel(CurrentFiles, MyAttachLabel)
+Return
+
+;
+;;
+;;; FIND FROM LABEL GUI
+ShowFindFromLabel:
+  Gui, FindFromLabel_:Add, Text, Section, Label:
+  Gui, FindFromLabel_:Add, Edit, ys-4 r1 w300 vMyFindLabel Limit
+  Gui, FindFromLabel_:Add, CheckBox, xs Section vAllVOBs, Search in all VOBs?
+
+  Gui, FindFromLabel_:Add, Button, x70 w70 xs Section, OK
+  Gui, FindFromLabel_:Add, Button, w70 ys, Cancel
+  Gui, FindFromLabel_:Show, AutoSize, Find Files from a Label (Escape to cancel)
+Return
+
+;;
+;;: handler for the find from label window
+FindFromLabel_GuiClose:
+FindFromLabel_GuiEscape:
+FindFromLabel_ButtonCancel:
+  ;; destroy the window without saving anything
+  Gui, Destroy
+Return
+
+;;
+;;; handler for the OK button of find from label window
+FindFromLabel_ButtonOK:
+  GuiControlGet, AllVOBs
+  Gui, Submit
+  ;; CurrentDir is set before call gui
+  CCFindFromLabel(CurrentDir, MyFindLabel, AllVOBs)
+Return
 
 ;
 ;;
@@ -1788,7 +2624,7 @@ MenuOptions:
 
   labelWidth := 110
   ;; frame with title (w270 = 15 + 110 + 10 + 145 + 15)
-  Gui, Options_:Add, GroupBox, x10 W270 h325, Shortcuts
+  Gui, Options_:Add, GroupBox, x10 W270 h440, Shortcuts
   ;; label for checkout shortcut
   Gui, Options_:Add, Text, xp+15 yp+19 w%labelWidth% Section, CheckOut:
   ;; add a edit area to enter hotkey for checkout shortcut
@@ -1841,6 +2677,26 @@ MenuOptions:
   Gui, Options_:Add, Text, xs w%labelWidth% Section, Edit config-spec:
   ;; add a edit area to enter hotkey for edit config spec shortcut
   Gui, Options_:Add, Hotkey, ys-4 vKeyEditConfigSpec, %EditConfigSpecShortcut%
+  ;; label for open version shortcut
+  Gui, Options_:Add, Text, xs w%labelWidth% Section, Open version:
+  ;; add a edit area to enter hotkey for open version shortcut
+  Gui, Options_:Add, Hotkey, ys-4 vKeyOpenVersion, %OpenVersionShortcut%
+  ;; label for create branch label shortcut
+  Gui, Options_:Add, Text, xs w%labelWidth% Section, Create branch Label:
+  ;; add a edit area to enter hotkey for open version shortcut
+  Gui, Options_:Add, Hotkey, ys-4 vKeyCreateBranch, %CreateBranchShortcut%
+  ;; label for attach a label shortcut
+  Gui, Options_:Add, Text, xs w%labelWidth% Section, Attach a Label:
+  ;; add a edit area to enter hotkey for attach label shortcut
+  Gui, Options_:Add, Hotkey, ys-4 vKeyAttachLabel, %AttachLabelShortcut%
+  ;; label for find files from a label shortcut
+  Gui, Options_:Add, Text, xs w%labelWidth% Section, Find Files from Label:
+  ;; add a edit area to enter hotkey for find from label shortcut
+  Gui, Options_:Add, Hotkey, ys-4 vKeyFindFromLabel, %FindFromLabelShortcut%
+  ;; label for link files to clearquest CR shortcut
+  Gui, Options_:Add, Text, xs w%labelWidth% Section, Link to ClearQuest CR:
+  ;; add a edit area to enter hotkey for link to clearquest shortcut
+  Gui, Options_:Add, Hotkey, ys-4 vKeyLinkToClearQuest, %LinkToClearQuestShortcut%
   ;;
   ;; frame with title for contextual menu
   Gui, Options_:Add, GroupBox, x10 W270 h45, Contextual Menu
@@ -1870,6 +2726,26 @@ Options_ButtonOK:
   GuiControlGet, Key
   GuiControlGet, WindowKey
   GuiControlGet, ContextMenuCheck
+  ;; get second key for each function
+  GuiControlGet, KeyCheckout
+  GuiControlGet, KeyCheckin
+  GuiControlGet, KeyUnCheckout
+  GuiControlGet, KeyHistory
+  GuiControlGet, KeyComparePrev
+  GuiControlGet, KeyTreeVersion
+  GuiControlGet, KeyExplorer
+  GuiControlGet, KeyFindCheckout
+  GuiControlGet, KeyElementProperties
+  GuiControlGet, KeyVersionProperties
+  GuiControlGet, KeyAddToSourceControl
+  GuiControlGet, KeyGetECSNumber
+  GuiControlGet, KeyEditConfigSpec
+  GuiControlGet, KeyOpenVersion
+  GuiControlGet, KeyCreateBranch
+  GuiControlGet, KeyAttachLabel
+  GuiControlGet, KeyFindFromLabel
+  GuiControlGet, KeyLinkToClearQuest
+
   ;; remove the gui
   Gui, Destroy
   ;; enable/disable contextual menu
@@ -1917,6 +2793,27 @@ Options_ButtonOK:
   Hotkey, IfWinActive, ahk_group %GroupWindowTitle%
   HotKey, %Key%, CheckShortcut
   Hotkey, IfWinActive
+
+  ;; set all second shortcuts
+  CheckOutShortcut           = %KeyCheckout%
+  CheckInShortcut            = %KeyCheckin%
+  UnCheckOutShortcut         = %KeyUnCheckout%
+  HistoryShortcut            = %KeyHistory%
+  ComparePrevShortcut        = %KeyComparePrev%
+  TreeVersionShortcut        = %KeyTreeVersion%
+  ExplorerShortcut           = %KeyExplorer%
+  FindCheckoutShortcut       = %KeyFindCheckout%
+  ElementPropertiesShortcut  = %KeyElementProperties%
+  VersionPropertiesShortcut  = %KeyVersionProperties%
+  AddToSourceControlShortcut = %KeyAddToSourceControl%
+  GetECSNumberShortcut       = %KeyGetECSNumber%
+  EditConfigSpecShortcut     = %KeyEditConfigSpec%
+  OpenVersionShortcut        = %KeyOpenVersion%
+  CreateBranchShortcut       = %KeyCreateBranch%
+  AttachLabelShortcut        = %KeyAttachLabel%
+  FindFromLabelShortcut      = %KeyFindFromLabel%
+  LinkToClearQuestShortcut   = %KeyLinkToClearQuest%
+
   ;; set new shortcut and write in ini file
   MainShortcut = %Key%
   GoSub, MenuCreateSaveIni
@@ -1928,7 +2825,7 @@ Return
 CreateGroupTitle()
 {
   global GroupWindowTitle, ExplorerTitle, ClearCaseFindCheckoutTitle, ClearCaseHistoryTitle
-  global ClearCaseExplorerTitle, ClearCaseTreeVersionTitle, UltraEditTitle
+  global ClearCaseExplorerTitle, ClearCaseTreeVersionTitle, UltraEditTitle, NotepadPlusPlusTitle
 
   static groupIndex := 1
 
@@ -1942,6 +2839,7 @@ CreateGroupTitle()
   GroupAdd, %GroupWindowTitle%, %ClearCaseExplorerTitle%
   GroupAdd, %GroupWindowTitle%, %ClearCaseTreeVersionTitle%
   GroupAdd, %GroupWindowTitle%, %UltraEditTitle%
+  GroupAdd, %GroupWindowTitle%, %NotepadPlusPlusTitle%
 }
 Return
 
@@ -1967,6 +2865,11 @@ LoadIniFile:
   IniRead, AddToSourceControlShortcut, %IniFile%, Shortcut, AddToSourceControlShortcut, a
   IniRead, GetECSNumberShortcut,       %IniFile%, Shortcut, GetECSNumberShortcut,       n
   IniRead, EditConfigSpecShortcut,     %IniFile%, Shortcut, EditConfigSpecShortcut,     s
+  IniRead, OpenVersionShortcut,        %IniFile%, Shortcut, OpenVersionShortcut,        o
+  IniRead, CreateBranchShortcut,       %IniFile%, Shortcut, CreateBranchShortcut,       b
+  IniRead, AttachLabelShortcut,        %IniFile%, Shortcut, AttachLabelShortcut,        l
+  IniRead, FindFromLabelShortcut,      %IniFile%, Shortcut, FindFromLabelShortcut,      g
+  IniRead, LinkToClearQuestShortcut,   %IniFile%, Shortcut, LinkToClearQuestShortcut,   q
   ;;
   ;; window titles
   IniRead, ExplorerTitle,              %IniFile%, Title, ExplorerTitle, ahk_class CabinetWClass|ExploreWClass
@@ -1975,10 +2878,11 @@ LoadIniFile:
   IniRead, ClearCaseExplorerTitle,     %IniFile%, Title, ClearCaseExplorerTitle, Rational ClearCase Explorer - ahk_exe clearexplorer.exe
   IniRead, ClearCaseTreeVersionTitle,  %IniFile%, Title, ClearCaseTreeVersionTitle, ahk_exe clearvtree.exe
   IniRead, UltraEditTitle,             %IniFile%, Title, UltraEditTitle, ahk_exe uedit32.exe
+  IniRead, NotepadPlusPlusTitle,       %IniFile%, Title, NotepadPlusPlusTitle, ahk_class Notepad++
   ;; contextual menu
   IniRead, ContextMenuTime,                    %IniFile%, ContextMenu, ContextMenuTime, 300
   IniRead, ContextMenuEnable,                  %IniFile%, ContextMenu, ContextMenuEnable, 1
-  IniRead, ContextMenuMax,                     %IniFile%, ContextMenu, ContextMenuMax,                     18
+  IniRead, ContextMenuMax,                     %IniFile%, ContextMenu, ContextMenuMax,                     24
   IniRead, ContextMenuPlaceExplorer,           %IniFile%, ContextMenu, ContextMenuPlaceExplorer,           0
   IniRead, ContextMenuPlaceFindCheckout,       %IniFile%, ContextMenu, ContextMenuPlaceFindCheckout,       2
   IniRead, ContextMenuPlaceCheckOut,           %IniFile%, ContextMenu, ContextMenuPlaceCheckOut,           4
@@ -1992,8 +2896,15 @@ LoadIniFile:
   IniRead, ContextMenuPlacePropertiesElement,  %IniFile%, ContextMenu, ContextMenuPlacePropertiesElement,  14
   IniRead, ContextMenuPlaceGetECSNumber,       %IniFile%, ContextMenu, ContextMenuPlaceGetECSNumber,       15
   IniRead, ContextMenuPlaceEditConfigSpec,     %IniFile%, ContextMenu, ContextMenuPlaceEditConfigSpec,     17
+  IniRead, ContextMenuPlaceOpenVersion,        %IniFile%, ContextMenu, ContextMenuPlaceOpenVersion,        18
+  IniRead, ContextMenuPlaceCreateBranch,       %IniFile%, ContextMenu, ContextMenuPlaceCreateBranch,       20
+  IniRead, ContextMenuPlaceAttachLabel,        %IniFile%, ContextMenu, ContextMenuPlaceAttachLabel,        21
+  IniRead, ContextMenuPlaceFindFromLabel,      %IniFile%, ContextMenu, ContextMenuPlaceFindFromLabel,      22
+  IniRead, ContextMenuPlaceLinkToClearQuest,   %IniFile%, ContextMenu, ContextMenuPlaceLinkToClearQuest,   23
   ;; config spec
-  IniRead, ConfigSpecFileName, %IniFile%, ConfigSpec, ConfigSpecFileName, clearcaseshortcut-config-spec.cs
+  IniRead, ConfigSpecFileName,             %IniFile%, ConfigSpec, ConfigSpecFileName, clearcaseshortcut-config-spec.cs
+  IniRead, ConfigSpecEditorSingleInstance, %IniFile%, ConfigSpec, ConfigSpecEditorSingleInstance, 0
+  IniRead, ConfigSpecTimeOut,              %IniFile%, ConfigSpec, ConfigSpecTimeOut, 120
   ;; command
   IniRead, SedCommand,   %IniFile%, Command, SedCommand, M:\livraison_agl\agl\liv\outils\win32\UnxUtils\sed.exe
   IniRead, GclipCommand, %IniFile%, Command, GclipCommand, M:\livraison_agl\agl\liv\outils\win32\UnxUtils\gclip.exe
@@ -2027,6 +2938,11 @@ MenuCreateSaveIni:
   IniWrite, %AddToSourceControlShortcut%, %IniFile%, Shortcut, AddToSourceControlShortcut
   IniWrite, %GetECSNumberShortcut%,       %IniFile%, Shortcut, GetECSNumberShortcut
   IniWrite, %EditConfigSpecShortcut%,     %IniFile%, Shortcut, EditConfigSpecShortcut
+  IniWrite, %OpenVersionShortcut%,        %IniFile%, Shortcut, OpenVersionShortcut
+  IniWrite, %CreateBranchShortcut%,       %IniFile%, Shortcut, CreateBranchShortcut
+  IniWrite, %AttachLabelShortcut%,        %IniFile%, Shortcut, AttachLabelShortcut
+  IniWrite, %FindFromLabelShortcut%,      %IniFile%, Shortcut, FindFromLabelShortcut
+  IniWrite, %LinkToClearQuestShortcut%,   %IniFile%, Shortcut, LinkToClearQuestShortcut
   ;; Section Title
   IniWrite, %ExplorerTitle%,              %IniFile%, Title, ExplorerTitle
   IniWrite, %ClearCaseFindCheckoutTitle%, %IniFile%, Title, ClearCaseFindCheckoutTitle
@@ -2034,6 +2950,7 @@ MenuCreateSaveIni:
   IniWrite, %ClearCaseExplorerTitle%,     %IniFile%, Title, ClearCaseExplorerTitle
   IniWrite, %ClearCaseTreeVersionTitle%,  %IniFile%, Title, ClearCaseTreeVersionTitle
   IniWrite, %UltraEditTitle%,             %IniFile%, Title, UltraEditTitle
+  IniWrite, %NotepadPlusPlusTitle%,       %IniFile%, Title, NotepadPlusPlusTitle
   ;; Section Contextual Menu
   IniWrite, %ContextMenuTime%,                    %IniFile%, ContextMenu, ContextMenuTime
   IniWrite, %ContextMenuEnable%,                  %IniFile%, ContextMenu, ContextMenuEnable
@@ -2051,8 +2968,15 @@ MenuCreateSaveIni:
   IniWrite, %ContextMenuPlacePropertiesElement%,  %IniFile%, ContextMenu, ContextMenuPlacePropertiesElement
   IniWrite, %ContextMenuPlaceGetECSNumber%,       %IniFile%, ContextMenu, ContextMenuPlaceGetECSNumber
   IniWrite, %ContextMenuPlaceEditConfigSpec%,     %IniFile%, ContextMenu, ContextMenuPlaceEditConfigSpec
+  IniWrite, %ContextMenuPlaceOpenVersion%,        %IniFile%, ContextMenu, ContextMenuPlaceOpenVersion
+  IniWrite, %ContextMenuPlaceCreateBranch%,       %IniFile%, ContextMenu, ContextMenuPlaceCreateBranch
+  IniWrite, %ContextMenuPlaceAttachLabel%,        %IniFile%, ContextMenu, ContextMenuPlaceAttachLabel
+  IniWrite, %ContextMenuPlaceFindFromLabel%,      %IniFile%, ContextMenu, ContextMenuPlaceFindFromLabel
+  IniWrite, %ContextMenuPlaceLinkToClearQuest%,   %IniFile%, ContextMenu, ContextMenuPlaceLinkToClearQuest
   ;; Section Config Spec
-  IniWrite, %ConfigSpecFileName%, %IniFile%, ConfigSpec, ConfigSpecFileName
+  IniWrite, %ConfigSpecFileName%,             %IniFile%, ConfigSpec, ConfigSpecFileName
+  IniWrite, %ConfigSpecEditorSingleInstance%, %IniFile%, ConfigSpec, ConfigSpecEditorSingleInstance
+  IniWrite, %ConfigSpecTimeOut%,              %IniFile%, ConfigSpec, ConfigSpecTimeOut
   ;; Section Command
   IniWrite, %SedCommand%,   %IniFile%, Command, SedCommand
   IniWrite, %GclipCommand%, %IniFile%, Command, GclipCommand

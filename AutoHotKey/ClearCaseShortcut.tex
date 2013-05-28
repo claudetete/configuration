@@ -1,0 +1,100 @@
+\documentclass[ignorenonframetext]{beamer}
+
+\usepackage[francais]{babel}
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+
+% to set picture width
+\def\myincludegraphics{
+  % pictures take 70% of text area
+  \includegraphics[width=0.5\textwidth]
+}
+
+% title page block rounded and shadow
+\useinnertheme[shadow]{rounded}
+% add footer (need to be before theme)
+\useoutertheme{infolines}
+% inherit theme
+\usetheme[height=7mm]{Rochester}
+% emacs icon color
+\usecolortheme[RGB={110,108,183}]{structure}
+% use ball instead of rectangle
+\setbeamertemplate{items}[ball]
+% remove navigation line
+\setbeamertemplate{navigation symbols}{}
+
+% get title, author and date
+\title{Présentation de ClearCaseShortcut}
+\author{Claude TÊTE}
+\date{\today}
+
+
+% start document
+\begin{document}
+
+% add the title page
+\frame{\titlepage}
+\begin{frame}{Sommaire}
+  \tableofcontents
+\end{frame}
+
+\section{Introduction}
+% new page
+\begin{frame}[fragile]
+  \frametitle{Introduction}
+  \begin{itemize}
+  \item ClearCaseShortcut est un script AutoHotKey.
+  \item Des raccourcis homogènes dans chaque fenêtre ou application pour des fonction de ClearCase\copyright IBM.
+  \item Cela fonctionne avec MS Explorer, ClearCase History Browser, ClearCase Find checkout, ClearCase Explorer, ClearCase Tree Version, UltraEdit and Notepad++.
+  \end{itemize}
+\end{frame}
+
+\section{Présentation}
+% new page
+\begin{frame}[fragile]
+  \frametitle{Présentation 1/3}
+  \begin{itemize}
+  \item Le script vient se loger dans la barre des notifications avec l'icône de ClearCase Explorer.
+  \item Un clic droit dessus pour faire apparaître un menu pour quitter le script, éditer le fichier de configuration ou ouvrir les options.
+    \begin{figure}[h]
+      \centering\myincludegraphics{./img/Menu.png}
+      \caption{Menu}
+    \end{figure}
+  \end{itemize}
+\end{frame}
+
+% new page
+\begin{frame}[fragile]
+  \frametitle{Présentation 2/3}
+  \begin{itemize}
+  \item Raccourcis claviers, par exemple pour ouvrir le \og Version Tree\fg{} d'un fichier depuis MS Explorer :
+    \begin{itemize}
+    \item Selectionner les éléments voulus.
+    \item Touche Windows + C puis T (sans la touche Windows)
+    \item Chaque \og Version Tree Browser\fg{} correspondant à chaque fichier selectionné va s'ouvrir.
+    \end{itemize}
+  \item Pour la liste complète des raccourcis ouvrir \og Help\fg{} ou le fichier README.
+  \end{itemize}
+\end{frame}
+
+% new page
+\begin{frame}[fragile]
+  \frametitle{Présentation 3/3}
+  \begin{itemize}
+  \item Un \textbf{long} clic droit sur un élément va ouvrir un menu contextuel sans accéder au réseau (donc instantané):
+    \begin{figure}[h]
+      \centering\myincludegraphics{./img/ContextMenu.png}
+      \caption{Menu Contextuel}
+    \end{figure}
+  \end{itemize}
+\end{frame}
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
