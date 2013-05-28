@@ -2457,7 +2457,7 @@ MenuHelp:
   StringReplace, MainKey, MainKey, #, % "Win + "
   Gui, AboutHelp_:Add, Text, ,
 (
-All these shortcuts are functional in MS Explorer, CC History Browser, CC Find checkout, CC Explorer, CC Tree Version, UltraEdit.
+All these shortcuts are functional in MS Explorer, CC History Browser, CC Find checkout, CC Explorer, CC Tree Version, UltraEdit and Notepad++.
         %MainKey%   %CheckOutShortcut%`t`tCheck Out...
         %MainKey%   %CheckInShortcut%`t`tCheck In...
         %MainKey%   %UnCheckOutShortcut%`t`tUn Checkout...
@@ -2513,9 +2513,9 @@ ShowCreateBranch:
   Gui, Branch_:Add, Text, xs Section, Comment:
   Gui, Branch_:Add, Edit, ys-4 r1 w400 vMyBranchComment Limit
 
-  Gui, Branch_:Add, Button, x70 w70 xs Section, OK
+  Gui, Branch_:Add, Button, x70 w70 xs Section Default, OK
   Gui, Branch_:Add, Button, w70 ys, Cancel
-  Gui, Branch_:Show, AutoSize, Create a Branch label (Escape to cancel)
+  Gui, Branch_:Show, AutoSize, %SoftwareName% Create a Branch label
 Return
 
 ;;
@@ -2542,9 +2542,9 @@ ShowAttachLabel:
   Gui, AttachLabel_:Add, Text, Section, Label:
   Gui, AttachLabel_:Add, Edit, ys-4 r1 w300 vMyAttachLabel Limit
 
-  Gui, AttachLabel_:Add, Button, x70 w70 xs Section, OK
+  Gui, AttachLabel_:Add, Button, x70 w70 xs Section Default, OK
   Gui, AttachLabel_:Add, Button, w70 ys, Cancel
-  Gui, AttachLabel_:Show, AutoSize, Attach a Label (Escape to cancel)
+  Gui, AttachLabel_:Show, AutoSize, %SoftwareName% Attach a Label
 Return
 
 ;;
@@ -2572,9 +2572,9 @@ ShowFindFromLabel:
   Gui, FindFromLabel_:Add, Edit, ys-4 r1 w300 vMyFindLabel Limit
   Gui, FindFromLabel_:Add, CheckBox, xs Section vAllVOBs, Search in all VOBs?
 
-  Gui, FindFromLabel_:Add, Button, x70 w70 xs Section, OK
+  Gui, FindFromLabel_:Add, Button, x70 w70 xs Section Default, OK
   Gui, FindFromLabel_:Add, Button, w70 ys, Cancel
-  Gui, FindFromLabel_:Show, AutoSize, Find Files from a Label (Escape to cancel)
+  Gui, FindFromLabel_:Show, AutoSize, %SoftwareName% Find Files from a Label
 Return
 
 ;;
@@ -2707,7 +2707,7 @@ MenuOptions:
   Gui, Options_:Add, Button, x70 w70 Section Default, OK
   Gui, Options_:Add, Button, w70 ys, Cancel
   ;; display the gui + set window title
-  Gui, Options_:Show, AutoSize, Escape to cancel
+  Gui, Options_:Show, AutoSize, %SoftwareName% Options (Escape to cancel)
 Return
 
 ;;
